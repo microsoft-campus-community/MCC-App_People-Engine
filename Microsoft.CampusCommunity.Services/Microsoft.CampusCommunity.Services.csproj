@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.CampusCommunity.DataAccess\Microsoft.CampusCommunity.DataAccess.csproj" />
+    <ProjectReference Include="..\Microsoft.CampusCommunity.Infrastructure\Microsoft.CampusCommunity.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

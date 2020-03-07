@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>aspnet-MCC-BackendApi-b0046106-24b3-40ad-8687-32c984ec0046</UserSecretsId>
+    <WebProject_DirectoryAccessLevelKey>1</WebProject_DirectoryAccessLevelKey>
+    <RootNamespace>Microsoft.CampusCommunity.Api</RootNamespace>
+    <AssemblyName>MicrosoftCampusCommunity.Api</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="3.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.CampusCommunity.DataAccess\Microsoft.CampusCommunity.DataAccess.csproj" />
+    <ProjectReference Include="..\Microsoft.CampusCommunity.Infrastructure\Microsoft.CampusCommunity.Infrastructure.csproj" />
+    <ProjectReference Include="..\Microsoft.CampusCommunity.Services\Microsoft.CampusCommunity.Services.csproj" />
+  </ItemGroup>
+
+</Project>
