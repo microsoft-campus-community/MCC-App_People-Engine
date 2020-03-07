@@ -8,9 +8,7 @@
     <Folder Include="Entities\Db\" />
     <Folder Include="Entities\Dto\" />
     <Folder Include="Interfaces\" />
-    <Folder Include="Exceptions\" />
     <Folder Include="Extensions\" />
-    <Folder Include="Helpers\" />
     <Folder Include="Middleware\" />
   </ItemGroup>
 

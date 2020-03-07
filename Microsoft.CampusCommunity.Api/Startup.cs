@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
@@ -42,8 +43,20 @@ namespace Microsoft.CampusCommunity.Api
         private void AddAuthentication(IServiceCollection services, ConfigurationAuthenticationOptions authenticationOptions)
         {
             services.Configure<ConfigurationAuthenticationOptions>(Configuration.GetSection(_authenticationSettingsSectionName));
+            
             services.AddAuthentication(AzureADDefaults.BearerAuthenticationScheme)
-                .AddAzureADBearer(options => Configuration.Bind(_authenticationSettingsSectionName, options));
+                .AddAzureADBearer(options =>
+                {
+                    options.ClientId = authenticationOptions.ClientId;
+                    options.TenantId = authenticationOptions.TenantId;
+                    options.Domain = authenticationOptions.Domain;
+                    options.Instance = authenticationOptions.Instance;
+                });
+            services.Configure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, options =>
+            {
+                options.Authority += "/v2.0"; // the token issuer is https://login.microsoftonline.com/TENANT_ID/v2.0 but the default scheme uses https://login.microsoftonline.com/TENANT_ID
+                options.SaveToken = true;
+            });
         }
 
         private static void AddSwagger(IServiceCollection services, ConfigurationAuthenticationOptions authenticationOptions)
@@ -57,9 +70,10 @@ namespace Microsoft.CampusCommunity.Api
                     Version = "1.0",
                 });
 
-                o.AddSecurityDefinition("aad-jwt", new OpenApiSecurityScheme()
+                o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
                     Type = SecuritySchemeType.OAuth2,
+                    Scheme = "MccApiAuth",
                     Flows = new OpenApiOAuthFlows()
                     {
                         // We only define implicit though the UI does support authorization code, client credentials and password grants
@@ -76,7 +90,7 @@ namespace Microsoft.CampusCommunity.Api
                 });
 
                 // Add security requirements to operations based on [Authorize] attributes
-                //o.OperationFilter<OAuthSecurityRequirementOperationFilter>();
+                o.OperationFilter<OAuthSecurityRequirementOperationFilter>();
 
                 // Include XML comments to documentation
                 string xmlDocFilePath = Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "api.xml");

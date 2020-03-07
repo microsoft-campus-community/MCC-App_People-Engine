@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CampusCommunity.Infrastructure.Helpers;
 using Microsoft.Extensions.Logging;
 
 namespace MCC_BackendApi.Controllers
@@ -25,10 +26,12 @@ namespace MCC_BackendApi.Controllers
             _logger = logger;
         }
 
+        [Authorize]
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {
             var rng = new Random();
+            var groups = AuthenticationHelper.GetAaDGroups(User);
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateTime.Now.AddDays(index),

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MicrosoftCampusCommunity.Api</name>
+    </assembly>
+    <members>
+        <member name="F:Microsoft.CampusCommunity.Api.Authorization.AuthorizedPermissions.DelegatedPermissionsForActions">
+            <summary>
+            Contains the allowed delegated permissions for each action.
+            If the caller has one of the allowed ones, they should be allowed
+            to perform the action.
+            </summary>
+        </member>
+        <member name="F:Microsoft.CampusCommunity.Api.Authorization.AuthorizedPermissions.ApplicationPermissionsForActions">
+            <summary>
+            Contains the allowed application permissions for each action.
+            If the caller has one of the allowed ones, they should be allowed
+            to perform the action.
+            </summary>
+        </member>
+    </members>
+</doc>
