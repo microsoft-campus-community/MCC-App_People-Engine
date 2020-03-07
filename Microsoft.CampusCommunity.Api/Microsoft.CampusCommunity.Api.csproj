@@ -8,14 +8,29 @@
     <AssemblyName>MicrosoftCampusCommunity.Api</AssemblyName>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>C:\Users\feschobe\OneDrive - Microsoft\07_Repositories\Hobby\MCC\backend-api\Microsoft.CampusCommunity.Api\api.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="3.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="3.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="5.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="5.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.CampusCommunity.DataAccess\Microsoft.CampusCommunity.DataAccess.csproj" />
     <ProjectReference Include="..\Microsoft.CampusCommunity.Infrastructure\Microsoft.CampusCommunity.Infrastructure.csproj" />
     <ProjectReference Include="..\Microsoft.CampusCommunity.Services\Microsoft.CampusCommunity.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="swagger\" />
   </ItemGroup>
 
 </Project>
