@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Microsoft.CampusCommunity.Api.Authorization;
+using Microsoft.CampusCommunity.Api.Extensions;
 using Microsoft.CampusCommunity.Api.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,8 +36,10 @@ namespace Microsoft.CampusCommunity.Api
                 .Get<ConfigurationAuthenticationOptions>();
             AddAuthentication(services, authenticationOptions);
             AddSwagger(services, authenticationOptions);
+            services.AddDependencies(Configuration);
 
-            
+
+
             services.AddControllers();
         }
 

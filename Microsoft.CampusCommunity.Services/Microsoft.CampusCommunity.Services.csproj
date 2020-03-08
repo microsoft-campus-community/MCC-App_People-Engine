@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Graph.Auth" Version="1.0.0-preview.4" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Microsoft.CampusCommunity.DataAccess\Microsoft.CampusCommunity.DataAccess.csproj" />
     <ProjectReference Include="..\Microsoft.CampusCommunity.Infrastructure\Microsoft.CampusCommunity.Infrastructure.csproj" />
   </ItemGroup>

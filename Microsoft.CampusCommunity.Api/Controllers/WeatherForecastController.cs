@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using MCC_BackendApi;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CampusCommunity.Infrastructure.Helpers;
 using Microsoft.Extensions.Logging;
 
-namespace MCC_BackendApi.Controllers
+namespace Microsoft.CampusCommunity.Api.Controllers
 {
     [Authorize]
     [ApiController]

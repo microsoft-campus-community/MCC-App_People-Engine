@@ -6,6 +6,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.CampusCommunity.DataAccess;
+using Microsoft.CampusCommunity.Infrastructure.Entities;
+using Microsoft.CampusCommunity.Infrastructure.Interfaces;
+using Microsoft.CampusCommunity.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -21,26 +24,12 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             var connectionString = configuration.GetConnectionString("connectionString");
             services.AddDbContext<MccContext>(options => { options.UseSqlServer(connectionString); });
 
-            // add swagger
-            //services.AddSwaggerGen(setup =>
-            //{
-            //    setup.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme()
-            //    {
-            //        Type = SecuritySchemeType.OAuth2,
-            //        Flows = new OpenApiOAuthFlows()
-            //        {
-            //            Implicit = new OpenApiOAuthFlow()
-            //            {
-            //                TokenUrl = new Uri($"{servicePrinciples.Api.Instance}/{servicePrinciples.Api.TenantId}/oauth2/v2.0/token"),
-            //                AuthorizationUrl = new Uri($"{servicePrinciples.Api.Instance}/{servicePrinciples.Api.TenantId}/oauth2/v2.0/authorize"),
-            //                Scopes =
-            //                {
-            //                    {servicePrinciples.Api.Scope, servicePrinciples.Api.ScopeDescription }
-            //                }
-            //            }
-            //        }
-            //    });
-            //})
+            var graphConfigSection = configuration.GetSection("Graph");
+            var graphConfig = graphConfigSection.Get<GraphClientConfiguration>();
+            services.AddSingleton<GraphClientConfiguration>(graphConfig);
+            services.AddScoped<IGraphService, GraphService>();
+
+            
 
             return services;
 

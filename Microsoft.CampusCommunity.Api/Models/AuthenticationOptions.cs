@@ -15,6 +15,6 @@ namespace Microsoft.CampusCommunity.Api.Models
         public string AuthorizationUrl => $"https://login.microsoftonline.com/{TenantId}/oauth2/v2.0/authorize";
 
         public string Authority => $"https://login.microsoftonline.com/{TenantId}/v2.0";
-        public string ApplicationIdUri => $"https://{Domain}/Api"; //https://campus-community.org/MCC-BackendApi
+        public string ApplicationIdUri => $"https://{Domain}/Api"; //https://campus-community.org/Api
     }
 }
