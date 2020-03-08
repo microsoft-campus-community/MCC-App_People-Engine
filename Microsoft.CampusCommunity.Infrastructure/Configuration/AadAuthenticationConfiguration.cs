@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Microsoft.CampusCommunity.Api.Models
+﻿namespace Microsoft.CampusCommunity.Infrastructure.Configuration
 {
-    public class ConfigurationAuthenticationOptions
+    public class AadAuthenticationConfiguration
     {
         public string Instance { get; set; }
         public string Domain { get; set; }

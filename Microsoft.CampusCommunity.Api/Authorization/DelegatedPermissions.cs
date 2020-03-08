@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 
 namespace Microsoft.CampusCommunity.Api.Authorization
 {
     internal static class DelegatedPermissions
     {
-        public const string ReadUsers = "Users.Read";
-        public const string WriteUsers = "Users.Write";
+        public const string ReadUsers = "Default.ReadWrite";
 
         public static string[] All => typeof(DelegatedPermissions)
             .GetFields()

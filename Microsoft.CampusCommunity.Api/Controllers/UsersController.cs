@@ -2,9 +2,10 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CampusCommunity.Infrastructure.Configuration;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
+using Microsoft.CampusCommunity.Infrastructure.Enums;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
-using Microsoft.Graph;
 
 namespace Microsoft.CampusCommunity.Api.Controllers
 {
@@ -21,7 +22,9 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         }
 
         [HttpGet]
-        public Task<IEnumerable<BasicUser>> Get()
+        [Authorize(Policy = PolicyNames.GermanLeads)]
+        public Task<IEnumerable<BasicUser>> Get(
+            [FromQuery(Name = "scope")] UserScope scope)
         {
             return _graphService.GetUsers();
         }

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -9,13 +10,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Microsoft.CampusCommunity.Api.Authorization;
 using Microsoft.CampusCommunity.Api.Extensions;
-using Microsoft.CampusCommunity.Api.Models;
+using Microsoft.CampusCommunity.Infrastructure.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.PlatformAbstractions;
+using Newtonsoft.Json.Converters;
 
 namespace Microsoft.CampusCommunity.Api
 {
@@ -27,82 +29,29 @@ namespace Microsoft.CampusCommunity.Api
         }
 
         public IConfiguration Configuration { get; }
-        private string _authenticationSettingsSectionName = "AzureAd";
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        /// <summary>
+        /// This method gets called by the runtime. Use this method to add services to the container.
+        /// </summary>
+        /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
-            var authenticationOptions = Configuration.GetSection(_authenticationSettingsSectionName)
-                .Get<ConfigurationAuthenticationOptions>();
-            AddAuthentication(services, authenticationOptions);
-            AddSwagger(services, authenticationOptions);
-            services.AddDependencies(Configuration);
-
-
-
-            services.AddControllers();
-        }
-
-        private void AddAuthentication(IServiceCollection services, ConfigurationAuthenticationOptions authenticationOptions)
-        {
-            services.Configure<ConfigurationAuthenticationOptions>(Configuration.GetSection(_authenticationSettingsSectionName));
             
-            services.AddAuthentication(AzureADDefaults.BearerAuthenticationScheme)
-                .AddAzureADBearer(options =>
-                {
-                    options.ClientId = authenticationOptions.ClientId;
-                    options.TenantId = authenticationOptions.TenantId;
-                    options.Domain = authenticationOptions.Domain;
-                    options.Instance = authenticationOptions.Instance;
-                });
-            services.Configure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, options =>
-            {
-                options.Authority += "/v2.0"; // the token issuer is https://login.microsoftonline.com/TENANT_ID/v2.0 but the default scheme uses https://login.microsoftonline.com/TENANT_ID
-                options.SaveToken = true;
-            });
+            services.AddDependencies(Configuration);
+            services.AddControllers()
+                .AddJsonOptions(options =>
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         }
 
-        private static void AddSwagger(IServiceCollection services, ConfigurationAuthenticationOptions authenticationOptions)
-        {
-            services.AddSwaggerGen(o =>
-            {
-                o.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Title = "Microsoft Campus Community API",
-                    Description = "API for the Microsoft Campus Community Management API Backend",
-                    Version = "1.0",
-                });
 
-                o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
-                {
-                    Type = SecuritySchemeType.OAuth2,
-                    Scheme = "MccApiAuth",
-                    Flows = new OpenApiOAuthFlows()
-                    {
-                        // We only define implicit though the UI does support authorization code, client credentials and password grants
-                        // We don't use authorization code here because it requires a client secret, which makes this sample more complicated by introducing secret management
-                        // Client credentials could work, but not when the UI client id == API client id. We'd need a separate registration and granting app permissions to that. And also needs a secret.
-                        // Password grant we don't use because... you shouldn't be using it.
-                        Implicit = new OpenApiOAuthFlow
-                        {
-                            AuthorizationUrl = new Uri(authenticationOptions.AuthorizationUrl),
-                            Scopes = DelegatedPermissions.All.ToDictionary(p =>
-                                $"{authenticationOptions.ApplicationIdUri}/{p}")
-                        }
-                    }
-                });
 
-                // Add security requirements to operations based on [Authorize] attributes
-                o.OperationFilter<OAuthSecurityRequirementOperationFilter>();
-
-                // Include XML comments to documentation
-                string xmlDocFilePath = Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "api.xml");
-                o.IncludeXmlComments(xmlDocFilePath);
-            });
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IOptions<ConfigurationAuthenticationOptions> authenticationOptions)
+        /// <summary>
+        /// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="env"></param>
+        /// <param name="authenticationOptions"></param>
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IOptions<AadAuthenticationConfiguration> authenticationOptions)
         {
             if (env.IsDevelopment())
             {
@@ -115,6 +64,7 @@ namespace Microsoft.CampusCommunity.Api
             {
                 o.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
                 o.OAuthClientId(authenticationOptions.Value.ClientId);
+                o.DisplayRequestDuration();
             });
 
             app.UseRouting();

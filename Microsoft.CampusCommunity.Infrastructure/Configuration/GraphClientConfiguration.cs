@@ -1,4 +1,4 @@
-﻿namespace Microsoft.CampusCommunity.Infrastructure.Entities
+﻿namespace Microsoft.CampusCommunity.Infrastructure.Configuration
 {
     public class GraphClientConfiguration
     {
