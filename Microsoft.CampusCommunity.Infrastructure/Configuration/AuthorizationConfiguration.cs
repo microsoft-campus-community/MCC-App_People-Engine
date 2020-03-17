@@ -18,6 +18,5 @@ namespace Microsoft.CampusCommunity.Infrastructure.Configuration
         public Guid GermanLeadsGroupId { get; set; }
         public Guid HubLeadsGroupId { get; set; }
         public Guid InternalDevelopmentGroupId { get; set; }
-
     }
 }

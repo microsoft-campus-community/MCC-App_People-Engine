@@ -103,6 +103,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             });
 
             services.AddSingleton<IAuthorizationHandler, GroupMembershipPolicyHandler>();
+			services.AddSingleton<AuthorizationConfiguration>(authConfig);
 
             return services;
         }
