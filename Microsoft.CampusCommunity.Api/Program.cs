@@ -19,24 +19,23 @@ namespace MCC_BackendApi
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-				.ConfigureAppConfiguration((hostingContext, config) =>
+				.ConfigureAppConfiguration((hostingContext, builder) =>
                 {
                     var env = hostingContext.HostingEnvironment;
 
-                    // load configuration files
-                    config
+                    builder
                         .AddJsonFile("appsettings.json", optional: true)
                         .AddJsonFile($"appsettings.{env.EnvironmentName.ToLower()}.json", optional: true);
 
 					// add Azure environment variables
-                    config.AddEnvironmentVariables();
+                    builder.AddEnvironmentVariables();
                 })
-                .ConfigureLogging((hostingContext, logging) =>
+                .ConfigureLogging((hostingContext, builder) =>
                 {
-                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    logging.AddConsole();
-                    logging.AddDebug();
-					logging.AddApplicationInsights();
+                    builder.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                    builder.AddConsole();
+                    builder.AddDebug();
+					builder.AddApplicationInsights();
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
