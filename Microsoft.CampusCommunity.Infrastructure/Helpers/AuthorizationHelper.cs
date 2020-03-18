@@ -9,7 +9,7 @@ namespace Microsoft.CampusCommunity.Infrastructure.Helpers
 {
     public static class AuthorizationHelper
     {
-        public static void ConfirmCampusMembership(this ClaimsPrincipal user, Guid groupId, IEnumerable<Guid> except)
+        public static void ConfirmGroupMembership(this ClaimsPrincipal user, Guid groupId, IEnumerable<Guid> except)
         {
             var groupIds = AuthenticationHelper.GetAaDGroups(user);
 
@@ -27,9 +27,9 @@ namespace Microsoft.CampusCommunity.Infrastructure.Helpers
 			}
         }
 
-		public static void ConfirmCampusMembership(this ClaimsPrincipal user, Guid groupId, Guid exceptGroup)
+		public static void ConfirmGroupMembership(this ClaimsPrincipal user, Guid groupId, Guid exceptGroup)
         {
-            user.ConfirmCampusMembership(groupId, new[]{exceptGroup});
+            user.ConfirmGroupMembership(groupId, new[]{exceptGroup});
         }
     }
 }

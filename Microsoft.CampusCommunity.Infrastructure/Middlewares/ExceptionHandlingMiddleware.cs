@@ -30,13 +30,13 @@ namespace Microsoft.CampusCommunity.Infrastructure.Middlewares {
 				// create guid that will be used as a reference Id for app insights tracking
 				var appInsightsTrackingId = Guid.NewGuid();
                 await HandleExceptions(context, exception, appInsightsTrackingId);
-				await LogExceptions(appInsightsTrackingId, exception);
+				LogExceptions(context, appInsightsTrackingId, exception);
             }
 		}
 
-		private Task LogExceptions(Guid appInsightsTrackingId, Exception e)
+		private void LogExceptions(HttpContext context, Guid appInsightsTrackingId, Exception e)
 		{
-			return _appInsightsService.TrackException(null, e, appInsightsTrackingId);
+			_appInsightsService.TrackException(context, e, appInsightsTrackingId);
 		}
 
 		private Task HandleExceptions(HttpContext context, Exception exception, Guid appInsightsTrackingId)

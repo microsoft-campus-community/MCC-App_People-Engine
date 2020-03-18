@@ -1,31 +1,29 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.CampusCommunity.Api.Authorization;
-using Microsoft.CampusCommunity.DataAccess;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
-using Microsoft.CampusCommunity.Infrastructure.Entities;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Microsoft.CampusCommunity.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.OpenApi.Models;
+using Microsoft.CampusCommunity.DataAccess;
+using Microsoft.ApplicationInsights;
+
 
 namespace Microsoft.CampusCommunity.Api.Extensions
 {
-    /// <summary>
-    /// Class to setup DI and other settings used in Startup.cs
-    /// </summary>
-    public static class ServiceCollectionsExtension
+	/// <summary>
+	/// Class to setup DI and other settings used in Startup.cs
+	/// </summary>
+	public static class ServiceCollectionsExtension
     {
         private const string AuthenticationSettingsSectionName = "AzureAd";
         private const string GraphAuthenticationSettingsSectionName = "Graph";
@@ -44,7 +42,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             var authenticationOptions = configuration.GetSection(AuthenticationSettingsSectionName)
                 .Get<AadAuthenticationConfiguration>();
             services.Configure<AadAuthenticationConfiguration>(configuration.GetSection(AuthenticationSettingsSectionName));
-
+			services.AddApplicationInsightsTelemetry();
 
             services.AddAuthentication(authenticationOptions);
             services.AddAuthorization(configuration);
@@ -164,6 +162,10 @@ namespace Microsoft.CampusCommunity.Api.Extensions
 
 
             services.AddScoped<IGraphService, GraphService>();
+			services.AddScoped<IAppInsightsService, AppInsightsService>();
+			services.AddScoped<IGraphCampusService, GraphGroupService>();
+			services.AddScoped<IGraphGroupService, GraphGroupService>();
+			services.AddScoped<IGraphUserService, GraphUserService>();
 
             return services;
         }

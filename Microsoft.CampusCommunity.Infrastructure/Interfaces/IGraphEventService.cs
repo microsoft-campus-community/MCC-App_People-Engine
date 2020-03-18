@@ -8,6 +8,7 @@ namespace Microsoft.CampusCommunity.Infrastructure.Interfaces
     public interface IGraphEventService
     {
         Task<IEnumerable<Event>> GetAllEvents();
-		Task<Event> CreateEvent(Event event);
+		//Task<Event> CreateEvent(Event event);
+
     }
 }

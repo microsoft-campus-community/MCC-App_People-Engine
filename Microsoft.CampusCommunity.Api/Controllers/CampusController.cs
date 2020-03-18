@@ -18,6 +18,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
     public class CampusController : ControllerBase
     {
         private readonly IGraphCampusService _graphService;
+		private readonly IGraphUserService _graphUserService;
 		private readonly AuthorizationConfiguration _authConfig;
 
         public CampusController(IGraphCampusService graphService, AuthorizationConfiguration authConfig)
@@ -54,7 +55,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
 		) 
 		{
 			// Authorize Campus
-			User.ConfirmGroupMembership(campusId, _authConfig.GermanLeadsGroupId);
+			User.ConfirmGroupMembership(campusId, new[]{_authConfig.GermanLeadsGroupId, _authConfig.InternalDevelopmentGroupId});
 			return _graphService.GetCampusUsers(campusId);
 		}
 
@@ -70,6 +71,18 @@ namespace Microsoft.CampusCommunity.Api.Controllers
 				throw new MccBadRequestException();
 			}
 			return _graphService.CreateCampus(campus);
+		}
+
+		[HttpPut]
+		[Route("{hubId}/campus/{campusId}/lead")]
+		[Authorize(Policy=PolicyNames.HubLeads)]
+		public Task DefineCampusLead(
+			[FromRoute] Guid campusId,
+			[FromRoute] Guid hubId,
+			[FromQuery] Guid userId
+		) 
+		{
+			return _graphUserService.DefineCampusLead(userId, campusId);
 		}
     }
 }

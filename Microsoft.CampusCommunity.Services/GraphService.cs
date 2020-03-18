@@ -12,9 +12,9 @@ namespace Microsoft.CampusCommunity.Services
     {
         private readonly GraphClientConfiguration _configuration;
         private IConfidentialClientApplication _msalClient;
-        public GraphServiceClient GraphClient { get; private set; }
+        public GraphServiceClient Client { get; private set; }
 
-        protected GraphService(GraphClientConfiguration configuration)
+        public GraphService(GraphClientConfiguration configuration)
         {
             _configuration = configuration;
             BuildGraphClient();
@@ -27,7 +27,7 @@ namespace Microsoft.CampusCommunity.Services
                 .WithAuthority(new Uri(_configuration.Authority))
                 .Build();
             var authProvider = new ClientCredentialProvider(_msalClient);
-            GraphClient = new GraphServiceClient(authProvider);
+            Client = new GraphServiceClient(authProvider);
         }
     }
 }

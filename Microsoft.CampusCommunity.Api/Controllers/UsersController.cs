@@ -14,7 +14,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
         private readonly IGraphUserService _graphService;
@@ -35,19 +35,8 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         }
 
 		[HttpGet]
-		[Authorize(Policy = PolicyNames.CampusLeads)]
-		public Task<IEnumerable<BasicUser>> GetCampusUsers(
-            [FromRoute] Guid campusId,
-			[FromQuery(Name = "scope")] UserScope scope = UserScope.Basic
-		) 
-		{
-			// Authorize Campus
-			User.ConfirmGroupMembership(campusId, _authConfig.CampusLeadsGroupId);
-			return _graphService.GetCampusUsers(campusId);
-		}
-
-		[HttpGet]
 		[Authorize(Policy=PolicyNames.General)]
+		[Route("current")]
 		public Task<BasicUser> GetCurrentUser(
 			[FromQuery(Name = "scope")] UserScope scope = UserScope.Basic
 		) 
@@ -67,18 +56,8 @@ namespace Microsoft.CampusCommunity.Api.Controllers
 				throw new MccBadRequestException();
 			}
 
-			User.ConfirmCampusMembership(campusId, _authConfig.CampusLeadsGroupId);
-			return _graphService.CreateUser(user);
-		}
-
-		[HttpPut]
-		[Authorize(Policy=PolicyNames.GermanLeads)]
-		public Task DefineCampusLead(
-			[FromRoute] Guid campusId,
-			[FromQuery] Guid userId
-		) 
-		{
-			return _graphService.DefineCampusLead(userId, campusId);
+			User.ConfirmGroupMembership(campusId, _authConfig.CampusLeadsGroupId);
+			return _graphService.CreateUser(user, campusId);
 		}
     }
 }
