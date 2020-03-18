@@ -41,6 +41,11 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             
             var authenticationOptions = configuration.GetSection(AuthenticationSettingsSectionName)
                 .Get<AadAuthenticationConfiguration>();
+
+			if (!authenticationOptions.IsValid()) {
+				throw new Exception($"Could not start application because configuration for section {AuthenticationSettingsSectionName} is not valid and misses values. Configuration: {authenticationOptions.ToString()}");
+			}
+
             services.Configure<AadAuthenticationConfiguration>(configuration.GetSection(AuthenticationSettingsSectionName));
 			services.AddApplicationInsightsTelemetry();
 
@@ -77,6 +82,10 @@ namespace Microsoft.CampusCommunity.Api.Extensions
         {
             // Create config
             var authorizationConfigSection = configuration.GetSection(AuthorizationSettingsSectionName);
+
+			if (string.IsNullOrWhiteSpace(authorizationConfigSection["AllCompanyGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["CampusLeadsGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["GermanLeadsGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["HubLeadsGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["InternalDevelopmentGroup"]))
+				throw new Exception("The authorization configuration section seems to be empty or not configured. Please check settings for section with name " + AuthorizationSettingsSectionName);
+
             var authConfig = new AuthorizationConfiguration(
                 authorizationConfigSection["AllCompanyGroup"],
                 authorizationConfigSection["CampusLeadsGroup"],
