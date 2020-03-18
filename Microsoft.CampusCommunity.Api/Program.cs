@@ -7,6 +7,7 @@ using Microsoft.CampusCommunity.Api;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration.EnvironmentVariables;
 
 namespace MCC_BackendApi
 {
