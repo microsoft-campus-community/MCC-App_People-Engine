@@ -27,7 +27,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
     {
         private const string AuthenticationSettingsSectionName = "AzureAd";
         private const string GraphAuthenticationSettingsSectionName = "Graph";
-        private const string AuthorizationSettingsSectionName = "Authorization";
+        private const string AuthorizationSettingsSectionName = "AuthorizationGroups";
 
         /// <summary>
         /// Adds all necessary dependencies, initializes DI for services and setup authentication and swagger
