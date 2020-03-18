@@ -83,8 +83,15 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             // Create config
             var authorizationConfigSection = configuration.GetSection(AuthorizationSettingsSectionName);
 
-			if (string.IsNullOrWhiteSpace(authorizationConfigSection["AllCompanyGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["CampusLeadsGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["GermanLeadsGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["HubLeadsGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["InternalDevelopmentGroup"]))
-				throw new Exception("The authorization configuration section seems to be empty or not configured. Please check settings for section with name " + AuthorizationSettingsSectionName);
+			if (string.IsNullOrWhiteSpace(authorizationConfigSection["AllCompanyGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["CampusLeadsGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["GermanLeadsGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["HubLeadsGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["InternalDevelopmentGroup"])) {
+				var sectionContents = authorizationConfigSection.AsEnumerable();
+				var message = $"The authorization configuration section seems to be empty or not configured. Please check settings for section with name {AuthorizationSettingsSectionName}. The following keys and values are present: ";
+				foreach(var kv in sectionContents) {
+					message += $" - ({kv.Key}): '{kv.Value}'";
+				}
+				
+				throw new ApplicationException(message);
+			}
 
             var authConfig = new AuthorizationConfiguration(
                 authorizationConfigSection["AllCompanyGroup"],
