@@ -5,7 +5,6 @@ using Microsoft.Graph;
 using Microsoft.Graph.Auth;
 using Microsoft.Identity.Client;
 
-
 namespace Microsoft.CampusCommunity.Services
 {
     public class GraphService : IGraphService

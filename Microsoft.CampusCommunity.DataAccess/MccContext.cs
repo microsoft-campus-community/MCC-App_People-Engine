@@ -2,6 +2,9 @@
 
 namespace Microsoft.CampusCommunity.DataAccess
 {
+    /// <summary>
+    /// Default database context for MCC app
+    /// </summary>
     public class MccContext : DbContext
     {
         public MccContext()
@@ -12,12 +15,11 @@ namespace Microsoft.CampusCommunity.DataAccess
         {
         }
 
-		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=EFProviders.InMemory;Trusted_Connection=True;ConnectRetryCount=0");
-            }
+                optionsBuilder.UseSqlServer(
+                    @"Server=(localdb)\mssqllocaldb;Database=EFProviders.InMemory;Trusted_Connection=True;ConnectRetryCount=0");
         }
     }
 }

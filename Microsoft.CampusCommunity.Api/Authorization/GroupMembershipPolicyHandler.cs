@@ -6,10 +6,20 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.CampusCommunity.Infrastructure.Helpers;
 
 namespace Microsoft.CampusCommunity.Api.Authorization
-{
-    public class GroupMembershipPolicyHandler: AuthorizationHandler<GroupMembershipRequirement>
+{   
+    /// <summary>
+    /// Dynamic Policy Handler that decides whether or not a user has the correct group membership to access a resource
+    /// </summary>
+    public class GroupMembershipPolicyHandler : AuthorizationHandler<GroupMembershipRequirement>
     {
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, GroupMembershipRequirement requirement)
+        /// <summary>
+        /// Implementation of AuthorizationHandler. Sets context.Succeed in case of met group requirement
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="requirement"></param>
+        /// <returns></returns>
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context,
+            GroupMembershipRequirement requirement)
         {
             IList<Guid> groups;
             try
@@ -24,10 +34,7 @@ namespace Microsoft.CampusCommunity.Api.Authorization
 
             // does the user have at least one of the necessary group memberships?
             var matches = groups.Intersect(requirement.GroupMemberships).Count();
-            if (matches > 0)
-            {
-                context.Succeed(requirement);
-            }
+            if (matches > 0) context.Succeed(requirement);
 
             return Task.CompletedTask;
         }
