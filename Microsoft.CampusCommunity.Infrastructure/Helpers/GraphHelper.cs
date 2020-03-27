@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
 using Microsoft.Graph;
 
-namespace Microsoft.CampusCommunity.Infrastructure
+namespace Microsoft.CampusCommunity.Infrastructure.Helpers
 {
     public static class GraphHelper
     {

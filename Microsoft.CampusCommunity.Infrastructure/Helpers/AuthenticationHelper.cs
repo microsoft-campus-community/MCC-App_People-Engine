@@ -9,6 +9,11 @@ namespace Microsoft.CampusCommunity.Infrastructure.Helpers
 {
     public static class AuthenticationHelper
     {
+        /// <summary>
+        /// Get the user id from the token claims
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public static Guid GetUserIdFromToken(ClaimsPrincipal user)
         {
             if (user == null || !user.HasClaim(c => c.Type == "sub"))
@@ -32,6 +37,11 @@ namespace Microsoft.CampusCommunity.Infrastructure.Helpers
             throw new MccNotAuthenticatedException($"Could not parse userId: {subClaim}");
         }
 
+        /// <summary>
+        /// Get all aad and office groups from token
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public static IEnumerable<Guid> GetAaDGroups(ClaimsPrincipal user)
         {
             if (user == null || !user.HasClaim(c => c.Type == "groups"))

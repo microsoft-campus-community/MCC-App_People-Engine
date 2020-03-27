@@ -2,6 +2,9 @@
 
 namespace Microsoft.CampusCommunity.DataAccess
 {
+    /// <summary>
+    /// Default database context for MCC app
+    /// </summary>
     public class MccContext : DbContext
     {
         public MccContext()

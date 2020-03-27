@@ -4,26 +4,16 @@ using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Http;
 using Microsoft.CampusCommunity.Infrastructure.Helpers;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
-using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.CampusCommunity.Services
 {
     public class AppInsightsService : IAppInsightsService
     {
-        private TelemetryClient _telemetry;
-        private const string AppInsightsInstrumentationKeyConfigurationKey = "AppInsightsInstrumentationKey";
+        private readonly TelemetryClient _telemetry;
 
-        public AppInsightsService(IConfiguration configuration, TelemetryClient telemetry)
+        public AppInsightsService(TelemetryClient telemetry)
         {
-            // _telemetry = new TelemetryClient(new ApplicationInsights.Extensibility.TelemetryConfiguration {
-            // 	InstrumentationKey = GetInstrumentationKey(configuration)
-            // });
             _telemetry = telemetry;
-        }
-
-        private string GetInstrumentationKey(IConfiguration configuration)
-        {
-            return configuration[AppInsightsInstrumentationKeyConfigurationKey];
         }
 
         public void TrackEvent(string eventName, string eventMessage)

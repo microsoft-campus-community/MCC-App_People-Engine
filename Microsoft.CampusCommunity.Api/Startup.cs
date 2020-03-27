@@ -10,13 +10,23 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.CampusCommunity.Api
 {
+    /// <summary>
+    /// Default startup class
+    /// </summary>
     public class Startup
     {
+        /// <summary>
+        /// Default startup class constructor
+        /// </summary>
+        /// <param name="configuration"></param>
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
 
+        /// <summary>
+        /// Configuration of app
+        /// </summary>
         public IConfiguration Configuration { get; }
 
         /// <summary>

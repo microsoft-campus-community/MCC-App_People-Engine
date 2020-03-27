@@ -4,19 +4,139 @@
         <name>MicrosoftCampusCommunity.Api</name>
     </assembly>
     <members>
+        <member name="T:Microsoft.CampusCommunity.Api.Authorization.GroupMembershipPolicyHandler">
+            <summary>
+            Dynamic Policy Handler that decides whether or not a user has the correct group membership to access a resource
+            </summary>
+        </member>
+        <member name="M:Microsoft.CampusCommunity.Api.Authorization.GroupMembershipPolicyHandler.HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext,Microsoft.CampusCommunity.Api.Authorization.GroupMembershipRequirement)">
+            <summary>
+            Implementation of AuthorizationHandler. Sets context.Succeed in case of met group requirement
+            </summary>
+            <param name="context"></param>
+            <param name="requirement"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Microsoft.CampusCommunity.Api.Authorization.GroupMembershipRequirement">
+            <summary>
+            Model for group membership requirement
+            </summary>
+        </member>
+        <member name="P:Microsoft.CampusCommunity.Api.Authorization.GroupMembershipRequirement.GroupMemberships">
+            <summary>
+            Needs to be member of one of these groups
+            </summary>
+        </member>
+        <member name="M:Microsoft.CampusCommunity.Api.Authorization.GroupMembershipRequirement.#ctor(System.Collections.Generic.IEnumerable{System.Guid})">
+            <summary>
+            Generic constructor
+            </summary>
+            <param name="groupMemberships"></param>
+        </member>
         <member name="T:Microsoft.CampusCommunity.Api.Authorization.OAuthSecurityRequirementOperationFilter">
             <summary>
-            Tells swagger when authentication is needed
+                Tells swagger when authentication is needed
             </summary>
+        </member>
+        <member name="T:Microsoft.CampusCommunity.Api.Controllers.CampusController">
+            <summary>
+                Controller for campus operations
+            </summary>
+        </member>
+        <member name="M:Microsoft.CampusCommunity.Api.Controllers.CampusController.#ctor(Microsoft.CampusCommunity.Infrastructure.Interfaces.IGraphCampusService,Microsoft.CampusCommunity.Infrastructure.Configuration.AuthorizationConfiguration,Microsoft.CampusCommunity.Infrastructure.Interfaces.IGraphUserService)">
+            <summary>
+                Default constructor
+            </summary>
+            <param name="graphService"></param>
+            <param name="authConfig"></param>
+            <param name="graphUserService"></param>
+        </member>
+        <member name="M:Microsoft.CampusCommunity.Api.Controllers.CampusController.GetAll">
+            <summary>
+                Get all campus.
+                Requirement: CampusLeads
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.CampusCommunity.Api.Controllers.CampusController.GetAllCampusForHub(System.Guid)">
+            <summary>
+                Get all campus for a specific hub
+                Requirement: HubLeads
+            </summary>
+            <param name="hubId"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.CampusCommunity.Api.Controllers.CampusController.GetUsers(System.Guid,System.Guid,Microsoft.CampusCommunity.Infrastructure.Enums.UserScope)">
+            <summary>
+                Get all users for a campus
+                Requirement: CampusLeads
+            </summary>
+            <param name="hubId">Id of the hub of the campus</param>
+            <param name="campusId">Id of the campus</param>
+            <param name="scope"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.CampusCommunity.Api.Controllers.CampusController.CreateCampus(System.Guid,Microsoft.CampusCommunity.Infrastructure.Entities.Dto.Campus)">
+            <summary>
+                Create a new campus
+                Requirement: GermanLeads
+            </summary>
+            <param name="hubId"></param>
+            <param name="campus"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.CampusCommunity.Api.Controllers.CampusController.DefineCampusLead(System.Guid,System.Guid,System.Guid)">
+            <summary>
+                Defines a campus lead for a hub
+            </summary>
+            <param name="campusId"></param>
+            <param name="hubId"></param>
+            <param name="userId"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Microsoft.CampusCommunity.Api.Controllers.UsersController">
+            <summary>
+            Controller for user operations
+            </summary>
+        </member>
+        <member name="M:Microsoft.CampusCommunity.Api.Controllers.UsersController.#ctor(Microsoft.CampusCommunity.Infrastructure.Interfaces.IGraphUserService,Microsoft.CampusCommunity.Infrastructure.Configuration.AuthorizationConfiguration)">
+            <summary>
+            Default constructor
+            </summary>
+            <param name="graphService"></param>
+            <param name="authConfig"></param>
+        </member>
+        <member name="M:Microsoft.CampusCommunity.Api.Controllers.UsersController.Get(Microsoft.CampusCommunity.Infrastructure.Enums.UserScope)">
+            <summary>
+            Get all MCC users
+            </summary>
+            <param name="scope"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.CampusCommunity.Api.Controllers.UsersController.GetCurrentUser(Microsoft.CampusCommunity.Infrastructure.Enums.UserScope)">
+            <summary>
+            Gets the current user
+            </summary>
+            <param name="scope"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.CampusCommunity.Api.Controllers.UsersController.CreateUser(System.Guid,Microsoft.CampusCommunity.Infrastructure.Entities.Dto.NewUser)">
+            <summary>
+            Create a new user
+            </summary>
+            <param name="campusId">Campus Id of the new user to be created under</param>
+            <param name="user"></param>
+            <returns></returns>
+            <exception cref="T:Microsoft.CampusCommunity.Infrastructure.Exceptions.MccBadRequestException"></exception>
         </member>
         <member name="T:Microsoft.CampusCommunity.Api.Extensions.ServiceCollectionsExtension">
             <summary>
-            Class to setup DI and other settings used in Startup.cs
+                Class to setup DI and other settings used in Startup.cs
             </summary>
         </member>
         <member name="M:Microsoft.CampusCommunity.Api.Extensions.ServiceCollectionsExtension.AddDependencies(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
-            Adds all necessary dependencies, initializes DI for services and setup authentication and swagger
+                Adds all necessary dependencies, initializes DI for services and setup authentication and swagger
             </summary>
             <param name="services"></param>
             <param name="configuration"></param>
@@ -24,13 +144,13 @@
         </member>
         <member name="M:Microsoft.CampusCommunity.Api.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
-            This method gets called by the runtime. Use this method to add services to the container.
+                This method gets called by the runtime. Use this method to add services to the container.
             </summary>
             <param name="services"></param>
         </member>
         <member name="M:Microsoft.CampusCommunity.Api.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment,Microsoft.Extensions.Options.IOptions{Microsoft.CampusCommunity.Infrastructure.Configuration.AadAuthenticationConfiguration})">
             <summary>
-            This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+                This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
             </summary>
             <param name="app"></param>
             <param name="env"></param>

@@ -2,6 +2,9 @@
 
 namespace Microsoft.CampusCommunity.Infrastructure.Configuration
 {
+    /// <summary>
+    /// Config Section class for group authorization
+    /// </summary>
     public class AuthorizationConfiguration
     {
         public AuthorizationConfiguration(string allCompanyGroupId, string campusLeadsGroupId,

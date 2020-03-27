@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.CampusCommunity.Infrastructure;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
 using Microsoft.CampusCommunity.Infrastructure.Exceptions;
@@ -31,10 +30,10 @@ namespace Microsoft.CampusCommunity.Services
         // 	""
         // };
 
-        private IGraphService _graphService;
-        private IGraphGroupService _graphGroupService;
-        private IAppInsightsService _appInsightsService;
-        private AuthorizationConfiguration _authorizationCongfiguration;
+        private readonly IGraphService _graphService;
+        private readonly IGraphGroupService _graphGroupService;
+        private readonly IAppInsightsService _appInsightsService;
+        private readonly AuthorizationConfiguration _authorizationConfiguration;
 
         public GraphUserService(IGraphService graphService, IGraphGroupService graphGroupService,
             IAppInsightsService appInsightsService, AuthorizationConfiguration authorizationConfiguration)
@@ -42,7 +41,7 @@ namespace Microsoft.CampusCommunity.Services
             _graphService = graphService;
             _appInsightsService = appInsightsService;
             _graphGroupService = graphGroupService;
-            _authorizationCongfiguration = authorizationConfiguration;
+            _authorizationConfiguration = authorizationConfiguration;
         }
 
         public async Task<IEnumerable<BasicUser>> GetAllUsers()
@@ -79,7 +78,7 @@ namespace Microsoft.CampusCommunity.Services
             await _graphService.Client.Users.Request().AddAsync(graphUser);
 
             // add user to the corresponding groups
-            await _graphGroupService.AddUserToGroup(graphUser, _authorizationCongfiguration.AllCompanyGroupId);
+            await _graphGroupService.AddUserToGroup(graphUser, _authorizationConfiguration.AllCompanyGroupId);
 
             // add licence
             await AssignLicense(graphUser);
@@ -105,10 +104,8 @@ namespace Microsoft.CampusCommunity.Services
                 }
             };
 
-            var removeLicenses = new List<Guid>();
-
             await _graphService.Client.Users[user.Id]
-                .AssignLicense(addLicenses, removeLicenses)
+                .AssignLicense(addLicenses, new List<Guid>())
                 .Request()
                 .PostAsync();
         }
@@ -131,7 +128,7 @@ namespace Microsoft.CampusCommunity.Services
             user.CompanyName = campus.Name;
 
             // add the campus lead to the campusLeads group
-            await _graphGroupService.AddUserToGroup(user, _authorizationCongfiguration.CampusLeadsGroupId);
+            await _graphGroupService.AddUserToGroup(user, _authorizationConfiguration.CampusLeadsGroupId);
 
             // change the manager of all members of the group to the new campus lead
             var campusMembers = await _graphGroupService.GetGroupMembers(campusId);
@@ -204,10 +201,9 @@ namespace Microsoft.CampusCommunity.Services
                 },
                 CcRecipients = new List<Recipient>()
             };
-            var saveToSentItems = false;
 
             await _graphService.Client.Users[fromUserId]
-                .SendMail(message, saveToSentItems)
+                .SendMail(message, false)
                 .Request()
                 .PostAsync();
         }

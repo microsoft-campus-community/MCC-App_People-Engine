@@ -8,7 +8,7 @@ namespace Microsoft.CampusCommunity.Infrastructure.Interfaces
     public interface IGraphCampusService
     {
         Task<IEnumerable<Campus>> GetAllCampus();
-        Task<IEnumerable<Campus>> GetAllCampusForhub(Guid hubId);
+        Task<IEnumerable<Campus>> GetAllCampusForHub(Guid hubId);
         Task<Campus> GetCampus(Guid id);
         Task<IEnumerable<BasicUser>> GetCampusUsers(Guid campusId);
         Task<Campus> CreateCampus(Campus campus);

@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CampusCommunity.Infrastructure;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
+using Microsoft.CampusCommunity.Infrastructure.Helpers;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Microsoft.Graph;
 
@@ -11,8 +11,8 @@ namespace Microsoft.CampusCommunity.Services
 {
     public class GraphGroupService : IGraphGroupService, IGraphCampusService
     {
-        private IGraphService _graphService;
-        private IAppInsightsService _appInsightsService;
+        private readonly IGraphService _graphService;
+        private readonly IAppInsightsService _appInsightsService;
 
         public const string CampusGroupNamePrefix = "Campus";
         public const string HubGroupNamePrefix = "Hub";
@@ -48,28 +48,15 @@ namespace Microsoft.CampusCommunity.Services
         public async Task<IEnumerable<User>> GetGroupMembers(Guid groupId)
         {
             var groupMembers = await _graphService.Client.Groups[groupId.ToString()].Members.Request().GetAsync();
-            var results = new List<User>();
-            foreach (var member in groupMembers)
-                if (member is User)
-                {
-                    var userMember = member as User;
-                    results.Add(userMember);
-                }
 
-            return results;
+            return groupMembers.OfType<User>().Select(member => member).ToList();
         }
 
         public async Task<IEnumerable<MccGroup>> GetAllGroups()
         {
             var dirObjects = await _graphService.Client.Groups.Request().GetAsync();
-            var result = new List<MccGroup>();
-            foreach (var dirObject in dirObjects)
-                result.Add(new MccGroup()
-                {
-                    Id = Guid.Parse(dirObject.Id),
-                    Name = dirObject.DisplayName
-                });
-            return result;
+            return dirObjects.Select(dirObject => new MccGroup()
+                {Id = Guid.Parse(dirObject.Id), Name = dirObject.DisplayName}).ToList();
         }
 
         public Task<IEnumerable<MccGroup>> UserMemberOf(Guid userId)
@@ -79,16 +66,20 @@ namespace Microsoft.CampusCommunity.Services
 
         public async Task<IEnumerable<MccGroup>> UserMemberOf(string userId)
         {
-            IUserMemberOfCollectionWithReferencesPage groupsCollection =
+            var groupsCollection =
                 await _graphService.Client.Users[userId].MemberOf.Request().GetAsync();
+
+            if (groupsCollection == null)
+                return new List<MccGroup>();
+
+
             var result = new List<MccGroup>();
-            if (groupsCollection?.Count == 0)
+            if (groupsCollection.Count == 0)
                 return result;
 
             foreach (DirectoryObject dirObject in groupsCollection)
-                if (dirObject is Group)
+                if (dirObject is Group @group)
                 {
-                    Group group = dirObject as Group;
                     if (!Guid.TryParse(@group.Id, out var groupId))
                     {
                         _appInsightsService.TrackEvent(nameof(UserMemberOf),
@@ -124,17 +115,11 @@ namespace Microsoft.CampusCommunity.Services
             };
 
             var dirObjects = await _graphService.Client.Groups.Request(queryOptions).GetAsync();
-            var result = new List<Campus>();
-            foreach (var dirObject in dirObjects)
-                result.Add(new Campus()
-                {
-                    Id = Guid.Parse(dirObject.Id),
-                    Name = dirObject.DisplayName
-                });
-            return result;
+            return dirObjects.Select(dirObject => new Campus()
+                {Id = Guid.Parse(dirObject.Id), Name = dirObject.DisplayName}).ToList();
         }
 
-        public Task<IEnumerable<Campus>> GetAllCampusForhub(Guid hubId)
+        public Task<IEnumerable<Campus>> GetAllCampusForHub(Guid hubId)
         {
             throw new NotImplementedException();
         }

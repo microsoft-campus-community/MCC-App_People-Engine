@@ -1,5 +1,8 @@
 ﻿namespace Microsoft.CampusCommunity.Infrastructure.Configuration
 {
+    /// <summary>
+    /// Configuration Section class for the graph client configuration
+    /// </summary>
     public class GraphClientConfiguration
     {
         public string ClientId { get; set; }

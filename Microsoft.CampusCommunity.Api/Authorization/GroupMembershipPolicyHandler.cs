@@ -6,9 +6,18 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.CampusCommunity.Infrastructure.Helpers;
 
 namespace Microsoft.CampusCommunity.Api.Authorization
-{
+{   
+    /// <summary>
+    /// Dynamic Policy Handler that decides whether or not a user has the correct group membership to access a resource
+    /// </summary>
     public class GroupMembershipPolicyHandler : AuthorizationHandler<GroupMembershipRequirement>
     {
+        /// <summary>
+        /// Implementation of AuthorizationHandler. Sets context.Succeed in case of met group requirement
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="requirement"></param>
+        /// <returns></returns>
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context,
             GroupMembershipRequirement requirement)
         {

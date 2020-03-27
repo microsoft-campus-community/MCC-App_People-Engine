@@ -12,6 +12,9 @@ using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 
 namespace Microsoft.CampusCommunity.Api.Controllers
 {
+    /// <summary>
+    /// Controller for user operations
+    /// </summary>
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
@@ -20,12 +23,22 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         private readonly IGraphUserService _graphService;
         private readonly AuthorizationConfiguration _authConfig;
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        /// <param name="graphService"></param>
+        /// <param name="authConfig"></param>
         public UsersController(IGraphUserService graphService, AuthorizationConfiguration authConfig)
         {
             _graphService = graphService;
             _authConfig = authConfig;
         }
 
+        /// <summary>
+        /// Get all MCC users
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <returns></returns>
         [HttpGet]
         [Authorize(Policy = PolicyNames.GermanLeads)]
         public Task<IEnumerable<BasicUser>> Get(
@@ -34,6 +47,11 @@ namespace Microsoft.CampusCommunity.Api.Controllers
             return _graphService.GetAllUsers();
         }
 
+        /// <summary>
+        /// Gets the current user
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <returns></returns>
         [HttpGet]
         [Authorize(Policy = PolicyNames.General)]
         [Route("current")]
@@ -44,6 +62,13 @@ namespace Microsoft.CampusCommunity.Api.Controllers
             return _graphService.GetCurrentUser(AuthenticationHelper.GetUserIdFromToken(User));
         }
 
+        /// <summary>
+        /// Create a new user
+        /// </summary>
+        /// <param name="campusId">Campus Id of the new user to be created under</param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        /// <exception cref="MccBadRequestException"></exception>
         [HttpPost]
         [Authorize(Policy = PolicyNames.CampusLeads)]
         public Task<BasicUser> CreateUser(

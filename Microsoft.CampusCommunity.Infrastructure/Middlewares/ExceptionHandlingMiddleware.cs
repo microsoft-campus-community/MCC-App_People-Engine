@@ -14,9 +14,9 @@ namespace Microsoft.CampusCommunity.Infrastructure.Middlewares
         private readonly RequestDelegate _next;
         private readonly IAppInsightsService _appInsightsService;
 
-        public ExceptionHandlingMiddleware(RequestDelegate NextDelegate, IAppInsightsService service)
+        public ExceptionHandlingMiddleware(RequestDelegate nextDelegate, IAppInsightsService service)
         {
-            _next = NextDelegate;
+            _next = nextDelegate;
             _appInsightsService = service;
         }
 
@@ -43,26 +43,32 @@ namespace Microsoft.CampusCommunity.Infrastructure.Middlewares
 
         private Task HandleExceptions(HttpContext context, Exception exception, Guid appInsightsTrackingId)
         {
-            int errorCode = -1;
-            string message = exception.Message;
-            string trace = exception.StackTrace;
+            var message = exception.Message;
+            var trace = exception.StackTrace;
 
-            switch (exception)
+            var errorCode = exception switch
             {
-                case MccNotAuthenticatedException _:
-                    errorCode = (int) HttpStatusCode.Unauthorized;
-                    break;
-                default:
-                    errorCode = (int) HttpStatusCode.InternalServerError;
-                    break;
-            }
+                MccNotAuthenticatedException _ => (int) HttpStatusCode.Unauthorized,
+                MccNotAuthorizedException _ => (int) HttpStatusCode.Forbidden,
+                MccBadRequestException _ => (int) HttpStatusCode.BadRequest,
+                MccExceptionBase _ => (int) HttpStatusCode.InternalServerError,
+                _ => (int) HttpStatusCode.InternalServerError
+            };
 
             var responseBody = WriteException(errorCode, message, trace, appInsightsTrackingId);
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int) errorCode;
+            context.Response.StatusCode = errorCode;
             return context.Response.WriteAsync(responseBody);
         }
 
+        /// <summary>
+        /// Serializes an exception so that it can be returned
+        /// </summary>
+        /// <param name="errorCode"></param>
+        /// <param name="message"></param>
+        /// <param name="trace"></param>
+        /// <param name="appInsightsTrackingId"></param>
+        /// <returns></returns>
         private string WriteException(int errorCode, string message, string trace, Guid appInsightsTrackingId)
         {
             var errorWrapper = new ExceptionClientWrapper
