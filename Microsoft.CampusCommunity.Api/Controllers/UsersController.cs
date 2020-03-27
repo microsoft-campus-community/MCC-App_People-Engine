@@ -35,7 +35,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         }
 
         /// <summary>
-        /// Get all MCC users
+        /// Get all MCC users. This will only return users where the "location" tag is not empty.
         /// </summary>
         /// <param name="scope"></param>
         /// <returns></returns>
