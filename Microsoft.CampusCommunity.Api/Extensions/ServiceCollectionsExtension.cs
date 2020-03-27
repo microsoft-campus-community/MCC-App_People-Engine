@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.CampusCommunity.Api.Authorization;
 using Microsoft.CampusCommunity.DataAccess;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
+using Microsoft.CampusCommunity.Infrastructure.Exceptions;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Microsoft.CampusCommunity.Services;
 using Microsoft.EntityFrameworkCore;
@@ -41,7 +42,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
                 .Get<AadAuthenticationConfiguration>();
 
             if (!authenticationOptions.IsValid())
-                throw new Exception(
+                throw new MccBadConfigurationException(
                     $"Could not start application because configuration for section {AuthenticationSettingsSectionName} is not valid and misses values. Configuration: {authenticationOptions.ToString()}");
 
             services.Configure<AadAuthenticationConfiguration>(
@@ -93,9 +94,9 @@ namespace Microsoft.CampusCommunity.Api.Extensions
                 var sectionContents = authorizationConfigSection.AsEnumerable();
                 var message =
                     $"The authorization configuration section seems to be empty or not configured. Please check settings for section with name {AuthorizationSettingsSectionName}. The following keys and values are present: ";
-                foreach (var kv in sectionContents) message += $" - ({kv.Key}): '{kv.Value}'";
+                message = sectionContents.Aggregate(message, (current, kv) => current + $" - ({kv.Key}): '{kv.Value}'");
 
-                throw new ApplicationException(message);
+                throw new MccBadConfigurationException(message);
             }
 
             var authConfig = new AuthorizationConfiguration(
@@ -132,7 +133,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
                 options.AddPolicy(PolicyNames.General, policy => { policy.Requirements.Add(generalGroup); });
             });
 
-            services.AddSingleton<IAuthorizationHandler, GroupMembershipPolicyHandler>();
+            services.AddScoped<IAuthorizationHandler, GroupMembershipPolicyHandler>();
             services.AddSingleton<AuthorizationConfiguration>(authConfig);
 
             return services;
