@@ -66,8 +66,17 @@ namespace Microsoft.CampusCommunity.Services
 
         public async Task<IEnumerable<MccGroup>> UserMemberOf(string userId)
         {
-            var groupsCollection =
-                await _graphService.Client.Users[userId].MemberOf.Request().GetAsync();
+            IUserMemberOfCollectionWithReferencesPage groupsCollection;
+            try
+            {
+                groupsCollection = await _graphService.Client.Users[userId].MemberOf.Request().GetAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Console.WriteLine(_graphService.Client.Users[userId].MemberOf.Request().RequestUrl);
+                throw;
+            }
 
             if (groupsCollection == null)
                 return new List<MccGroup>();

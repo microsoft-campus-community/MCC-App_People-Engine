@@ -32,6 +32,7 @@ namespace Microsoft.CampusCommunity.Services
                 .WithClientSecret(_configuration.ClientSecret)
                 .WithAuthority(new Uri(_configuration.Authority))
                 .Build();
+            
             var authProvider = new ClientCredentialProvider(_msalClient);
             Client = new GraphServiceClient(authProvider);
         }

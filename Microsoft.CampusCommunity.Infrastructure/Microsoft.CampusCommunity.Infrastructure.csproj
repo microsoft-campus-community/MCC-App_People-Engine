@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <Folder Include="Entities\Db\" />
-    <Folder Include="Extensions\" />
     <Folder Include="Middleware\" />
   </ItemGroup>
 
