@@ -4,7 +4,8 @@ namespace Microsoft.CampusCommunity.Infrastructure.Configuration
 {
     public class AuthorizationConfiguration
     {
-        public AuthorizationConfiguration(string allCompanyGroupId, string campusLeadsGroupId, string germanLeadsGroupId, string hubLeadsGroupId, string internalDevelopmentGroupId)
+        public AuthorizationConfiguration(string allCompanyGroupId, string campusLeadsGroupId,
+            string germanLeadsGroupId, string hubLeadsGroupId, string internalDevelopmentGroupId)
         {
             AllCompanyGroupId = Guid.Parse(allCompanyGroupId);
             CampusLeadsGroupId = Guid.Parse(campusLeadsGroupId);

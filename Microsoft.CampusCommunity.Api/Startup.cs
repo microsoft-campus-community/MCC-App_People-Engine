@@ -1,23 +1,12 @@
-using System;
-using System.IO;
-using System.Linq;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Authentication.AzureAD.UI;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Diagnostics;
-using Microsoft.CampusCommunity.Api.Authorization;
 using Microsoft.CampusCommunity.Api.Extensions;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
-using Microsoft.Extensions.PlatformAbstractions;
-using Newtonsoft.Json.Converters;
 
 namespace Microsoft.CampusCommunity.Api
 {
@@ -31,12 +20,11 @@ namespace Microsoft.CampusCommunity.Api
         public IConfiguration Configuration { get; }
 
         /// <summary>
-        /// This method gets called by the runtime. Use this method to add services to the container.
+        ///     This method gets called by the runtime. Use this method to add services to the container.
         /// </summary>
         /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
-            
             services.AddDependencies(Configuration);
             services.AddControllers()
                 .AddJsonOptions(options =>
@@ -44,19 +32,16 @@ namespace Microsoft.CampusCommunity.Api
         }
 
 
-
         /// <summary>
-        /// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        ///     This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         /// </summary>
         /// <param name="app"></param>
         /// <param name="env"></param>
         /// <param name="authenticationOptions"></param>
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IOptions<AadAuthenticationConfiguration> authenticationOptions)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
+            IOptions<AadAuthenticationConfiguration> authenticationOptions)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            if (env.IsDevelopment()) app.UseDeveloperExceptionPage();
 
             app.UseHttpsRedirection();
             app.UseSwagger();
@@ -72,10 +57,7 @@ namespace Microsoft.CampusCommunity.Api
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
             //app.UseCors(policy => policy
             //    .AllowAnyOrigin()

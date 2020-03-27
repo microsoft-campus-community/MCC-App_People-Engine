@@ -7,9 +7,10 @@ using Microsoft.CampusCommunity.Infrastructure.Helpers;
 
 namespace Microsoft.CampusCommunity.Api.Authorization
 {
-    public class GroupMembershipPolicyHandler: AuthorizationHandler<GroupMembershipRequirement>
+    public class GroupMembershipPolicyHandler : AuthorizationHandler<GroupMembershipRequirement>
     {
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, GroupMembershipRequirement requirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context,
+            GroupMembershipRequirement requirement)
         {
             IList<Guid> groups;
             try
@@ -24,10 +25,7 @@ namespace Microsoft.CampusCommunity.Api.Authorization
 
             // does the user have at least one of the necessary group memberships?
             var matches = groups.Intersect(requirement.GroupMemberships).Count();
-            if (matches > 0)
-            {
-                context.Succeed(requirement);
-            }
+            if (matches > 0) context.Succeed(requirement);
 
             return Task.CompletedTask;
         }

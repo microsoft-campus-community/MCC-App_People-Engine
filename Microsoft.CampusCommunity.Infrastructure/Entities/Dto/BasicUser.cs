@@ -6,7 +6,9 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Dto
     public class BasicUser
     {
         public bool? AccountEnabled { get; set; }
+
         public string City { get; set; }
+
         //public string University { get; set; } //Company
         public DateTimeOffset? HireDate { get; set; }
         public string University { get; set; } // Department

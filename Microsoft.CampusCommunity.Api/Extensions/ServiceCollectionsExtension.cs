@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication;
@@ -8,29 +6,29 @@ using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.CampusCommunity.Api.Authorization;
+using Microsoft.CampusCommunity.DataAccess;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Microsoft.CampusCommunity.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.OpenApi.Models;
-using Microsoft.CampusCommunity.DataAccess;
-using Microsoft.ApplicationInsights;
-
 
 namespace Microsoft.CampusCommunity.Api.Extensions
 {
-	/// <summary>
-	/// Class to setup DI and other settings used in Startup.cs
-	/// </summary>
-	public static class ServiceCollectionsExtension
+    /// <summary>
+    ///     Class to setup DI and other settings used in Startup.cs
+    /// </summary>
+    public static class ServiceCollectionsExtension
     {
         private const string AuthenticationSettingsSectionName = "AzureAd";
         private const string GraphAuthenticationSettingsSectionName = "Graph";
         private const string AuthorizationSettingsSectionName = "AuthorizationGroups";
 
         /// <summary>
-        /// Adds all necessary dependencies, initializes DI for services and setup authentication and swagger
+        ///     Adds all necessary dependencies, initializes DI for services and setup authentication and swagger
         /// </summary>
         /// <param name="services"></param>
         /// <param name="configuration"></param>
@@ -38,16 +36,17 @@ namespace Microsoft.CampusCommunity.Api.Extensions
         public static IServiceCollection AddDependencies(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddSingleton<IConfiguration>(configuration);
-            
+
             var authenticationOptions = configuration.GetSection(AuthenticationSettingsSectionName)
                 .Get<AadAuthenticationConfiguration>();
 
-			if (!authenticationOptions.IsValid()) {
-				throw new Exception($"Could not start application because configuration for section {AuthenticationSettingsSectionName} is not valid and misses values. Configuration: {authenticationOptions.ToString()}");
-			}
+            if (!authenticationOptions.IsValid())
+                throw new Exception(
+                    $"Could not start application because configuration for section {AuthenticationSettingsSectionName} is not valid and misses values. Configuration: {authenticationOptions.ToString()}");
 
-            services.Configure<AadAuthenticationConfiguration>(configuration.GetSection(AuthenticationSettingsSectionName));
-			services.AddApplicationInsightsTelemetry();
+            services.Configure<AadAuthenticationConfiguration>(
+                configuration.GetSection(AuthenticationSettingsSectionName));
+            services.AddApplicationInsightsTelemetry();
 
             services.AddAuthentication(authenticationOptions);
             services.AddAuthorization(configuration);
@@ -58,7 +57,8 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             return services;
         }
 
-        private static IServiceCollection AddAuthentication(this IServiceCollection services, AadAuthenticationConfiguration authenticationOptions)
+        private static IServiceCollection AddAuthentication(this IServiceCollection services,
+            AadAuthenticationConfiguration authenticationOptions)
         {
             services.AddAuthentication(AzureADDefaults.BearerAuthenticationScheme)
                 .AddAzureADBearer(options =>
@@ -70,7 +70,8 @@ namespace Microsoft.CampusCommunity.Api.Extensions
                 });
             services.Configure<JwtBearerOptions>(AzureADDefaults.JwtBearerAuthenticationScheme, options =>
             {
-                options.Authority += "/v2.0"; // the token issuer is https://login.microsoftonline.com/TENANT_ID/v2.0 but the default scheme uses https://login.microsoftonline.com/TENANT_ID
+                options.Authority +=
+                    "/v2.0"; // the token issuer is https://login.microsoftonline.com/TENANT_ID/v2.0 but the default scheme uses https://login.microsoftonline.com/TENANT_ID
                 options.SaveToken = true;
             });
 
@@ -83,15 +84,19 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             // Create config
             var authorizationConfigSection = configuration.GetSection(AuthorizationSettingsSectionName);
 
-			if (string.IsNullOrWhiteSpace(authorizationConfigSection["AllCompanyGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["CampusLeadsGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["GermanLeadsGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["HubLeadsGroup"]) || string.IsNullOrWhiteSpace(authorizationConfigSection["InternalDevelopmentGroup"])) {
-				var sectionContents = authorizationConfigSection.AsEnumerable();
-				var message = $"The authorization configuration section seems to be empty or not configured. Please check settings for section with name {AuthorizationSettingsSectionName}. The following keys and values are present: ";
-				foreach(var kv in sectionContents) {
-					message += $" - ({kv.Key}): '{kv.Value}'";
-				}
-				
-				throw new ApplicationException(message);
-			}
+            if (string.IsNullOrWhiteSpace(authorizationConfigSection["AllCompanyGroup"]) ||
+                string.IsNullOrWhiteSpace(authorizationConfigSection["CampusLeadsGroup"]) ||
+                string.IsNullOrWhiteSpace(authorizationConfigSection["GermanLeadsGroup"]) ||
+                string.IsNullOrWhiteSpace(authorizationConfigSection["HubLeadsGroup"]) ||
+                string.IsNullOrWhiteSpace(authorizationConfigSection["InternalDevelopmentGroup"]))
+            {
+                var sectionContents = authorizationConfigSection.AsEnumerable();
+                var message =
+                    $"The authorization configuration section seems to be empty or not configured. Please check settings for section with name {AuthorizationSettingsSectionName}. The following keys and values are present: ";
+                foreach (var kv in sectionContents) message += $" - ({kv.Key}): '{kv.Value}'";
+
+                throw new ApplicationException(message);
+            }
 
             var authConfig = new AuthorizationConfiguration(
                 authorizationConfigSection["AllCompanyGroup"],
@@ -99,25 +104,36 @@ namespace Microsoft.CampusCommunity.Api.Extensions
                 authorizationConfigSection["GermanLeadsGroup"],
                 authorizationConfigSection["HubLeadsGroup"],
                 authorizationConfigSection["InternalDevelopmentGroup"]
-                );
+            );
 
-            var developmentPolicyGroups = new GroupMembershipRequirement(new []{authConfig.InternalDevelopmentGroupId});
-            var germanLeadsPolicyGroups = new GroupMembershipRequirement(new[] { authConfig.GermanLeadsGroupId });
-            var hubLeadsGroup = new GroupMembershipRequirement(new[] { authConfig.InternalDevelopmentGroupId, authConfig.GermanLeadsGroupId, authConfig.HubLeadsGroupId });
-            var campusLeadsGroup = new GroupMembershipRequirement(new[] { authConfig.InternalDevelopmentGroupId, authConfig.GermanLeadsGroupId, authConfig.HubLeadsGroupId, authConfig.CampusLeadsGroupId });
-            var generalGroup = new GroupMembershipRequirement(new[] { authConfig.InternalDevelopmentGroupId, authConfig.GermanLeadsGroupId, authConfig.HubLeadsGroupId, authConfig.CampusLeadsGroupId, authConfig.AllCompanyGroupId });
+            var developmentPolicyGroups = new GroupMembershipRequirement(new[] {authConfig.InternalDevelopmentGroupId});
+            var germanLeadsPolicyGroups = new GroupMembershipRequirement(new[] {authConfig.GermanLeadsGroupId});
+            var hubLeadsGroup = new GroupMembershipRequirement(new[]
+                {authConfig.InternalDevelopmentGroupId, authConfig.GermanLeadsGroupId, authConfig.HubLeadsGroupId});
+            var campusLeadsGroup = new GroupMembershipRequirement(new[]
+            {
+                authConfig.InternalDevelopmentGroupId, authConfig.GermanLeadsGroupId, authConfig.HubLeadsGroupId,
+                authConfig.CampusLeadsGroupId
+            });
+            var generalGroup = new GroupMembershipRequirement(new[]
+            {
+                authConfig.InternalDevelopmentGroupId, authConfig.GermanLeadsGroupId, authConfig.HubLeadsGroupId,
+                authConfig.CampusLeadsGroupId, authConfig.AllCompanyGroupId
+            });
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy(PolicyNames.DevelopmentInternal, policy => { policy.Requirements.Add(developmentPolicyGroups); });
-                options.AddPolicy(PolicyNames.GermanLeads, policy => { policy.Requirements.Add(germanLeadsPolicyGroups); });
+                options.AddPolicy(PolicyNames.DevelopmentInternal,
+                    policy => { policy.Requirements.Add(developmentPolicyGroups); });
+                options.AddPolicy(PolicyNames.GermanLeads,
+                    policy => { policy.Requirements.Add(germanLeadsPolicyGroups); });
                 options.AddPolicy(PolicyNames.HubLeads, policy => { policy.Requirements.Add(hubLeadsGroup); });
                 options.AddPolicy(PolicyNames.CampusLeads, policy => { policy.Requirements.Add(campusLeadsGroup); });
                 options.AddPolicy(PolicyNames.General, policy => { policy.Requirements.Add(generalGroup); });
             });
 
             services.AddSingleton<IAuthorizationHandler, GroupMembershipPolicyHandler>();
-			services.AddSingleton<AuthorizationConfiguration>(authConfig);
+            services.AddSingleton<AuthorizationConfiguration>(authConfig);
 
             return services;
         }
@@ -129,7 +145,8 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             return services;
         }
 
-        private static IServiceCollection AddSwagger(this IServiceCollection services, AadAuthenticationConfiguration authenticationOptions)
+        private static IServiceCollection AddSwagger(this IServiceCollection services,
+            AadAuthenticationConfiguration authenticationOptions)
         {
             services.AddSwaggerGen(o =>
             {
@@ -138,7 +155,8 @@ namespace Microsoft.CampusCommunity.Api.Extensions
                     Title = "Microsoft Campus Community API",
                     Description = "API for the Microsoft Campus Community Management API Backend",
                     Version = "1.0",
-                    Contact = new OpenApiContact() { Email = "info@campus-community.org", Name = "Microsoft Campus Community"}
+                    Contact = new OpenApiContact()
+                        {Email = "info@campus-community.org", Name = "Microsoft Campus Community"}
                 });
 
                 o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
@@ -164,7 +182,8 @@ namespace Microsoft.CampusCommunity.Api.Extensions
                 o.OperationFilter<OAuthSecurityRequirementOperationFilter>();
 
                 // Include XML comments to documentation
-                string xmlDocFilePath = Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "api.xml");
+                string xmlDocFilePath =
+                    Path.Combine(PlatformServices.Default.Application.ApplicationBasePath, "api.xml");
                 o.IncludeXmlComments(xmlDocFilePath);
             });
             return services;
@@ -178,10 +197,10 @@ namespace Microsoft.CampusCommunity.Api.Extensions
 
 
             services.AddScoped<IGraphService, GraphService>();
-			services.AddScoped<IAppInsightsService, AppInsightsService>();
-			services.AddScoped<IGraphCampusService, GraphGroupService>();
-			services.AddScoped<IGraphGroupService, GraphGroupService>();
-			services.AddScoped<IGraphUserService, GraphUserService>();
+            services.AddScoped<IAppInsightsService, AppInsightsService>();
+            services.AddScoped<IGraphCampusService, GraphGroupService>();
+            services.AddScoped<IGraphGroupService, GraphGroupService>();
+            services.AddScoped<IGraphUserService, GraphUserService>();
 
             return services;
         }

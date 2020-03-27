@@ -8,9 +8,9 @@ namespace Microsoft.CampusCommunity.Infrastructure.Interfaces
     public interface IGraphUserService
     {
         Task<IEnumerable<BasicUser>> GetAllUsers();
-		Task<BasicUser> GetCurrentUser(Guid userId);
-		Task<BasicUser> CreateUser(NewUser user, Guid campusId);
-		Task DefineCampusLead(Guid userId, Guid campusId);
-		Task SendMail(string subject, string body, string fromUserId, string to);
+        Task<BasicUser> GetCurrentUser(Guid userId);
+        Task<BasicUser> CreateUser(NewUser user, Guid campusId);
+        Task DefineCampusLead(Guid userId, Guid campusId);
+        Task SendMail(string subject, string body, string fromUserId, string to);
     }
 }
