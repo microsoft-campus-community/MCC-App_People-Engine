@@ -9,6 +9,8 @@ namespace Microsoft.CampusCommunity.Infrastructure.Helpers
 {
     public static class AuthenticationHelper
     {
+        public const string OIdClaimName = "http://schemas.microsoft.com/identity/claims/objectidentifier";
+
         /// <summary>
         /// Get the user id from the token claims
         /// </summary>
@@ -16,13 +18,13 @@ namespace Microsoft.CampusCommunity.Infrastructure.Helpers
         /// <returns></returns>
         public static Guid GetUserIdFromToken(ClaimsPrincipal user)
         {
-            if (user == null || !user.HasClaim(c => c.Type == "sub"))
+            if (user == null || !user.HasClaim(c => c.Type == OIdClaimName))
                 throw new MccNotAuthenticatedException();
 
             string subClaim;
             try
             {
-                subClaim = user.FindFirst(c => c.Type == "sub").Value;
+                subClaim = user.FindFirst(c => c.Type == OIdClaimName).Value;
             }
             catch (Exception e)
             {

@@ -46,8 +46,14 @@ namespace Microsoft.CampusCommunity.Services
 
         public async Task<IEnumerable<BasicUser>> GetAllUsers()
         {
+            // TODO: check in the future if office location is supported as a graph filter attribute. Try something like $filter=officeLocation+eq+'Munich'. Currently this is not supported.
+
             var users = await _graphService.Client.Users.Request().GetAsync();
-            return GraphHelper.MapBasicUsers(users);
+
+            // only return users where location is not empty
+            var filteredUsers = users.Where(u => !string.IsNullOrWhiteSpace(u.OfficeLocation));
+
+            return GraphHelper.MapBasicUsers(filteredUsers);
         }
 
         public async Task<BasicUser> GetCurrentUser(Guid userId)

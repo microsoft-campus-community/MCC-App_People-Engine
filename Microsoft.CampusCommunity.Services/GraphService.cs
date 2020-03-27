@@ -1,5 +1,6 @@
 using System;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
+using Microsoft.CampusCommunity.Infrastructure.Exceptions;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Microsoft.Graph;
 using Microsoft.Graph.Auth;
@@ -21,6 +22,12 @@ namespace Microsoft.CampusCommunity.Services
 
         private void BuildGraphClient()
         {
+            // check if configuration contains client secret
+            if (string.IsNullOrWhiteSpace(_configuration.ClientSecret))
+            {
+                throw new MccBadConfigurationException("Graph API client secret is not configured");
+            }
+
             _msalClient = ConfidentialClientApplicationBuilder.Create(_configuration.ClientId)
                 .WithClientSecret(_configuration.ClientSecret)
                 .WithAuthority(new Uri(_configuration.Authority))
