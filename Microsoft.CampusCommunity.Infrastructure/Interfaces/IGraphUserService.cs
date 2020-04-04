@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
+using Microsoft.Graph;
 
 namespace Microsoft.CampusCommunity.Infrastructure.Interfaces
 {
@@ -11,6 +12,6 @@ namespace Microsoft.CampusCommunity.Infrastructure.Interfaces
         Task<BasicUser> GetCurrentUser(Guid userId);
         Task<BasicUser> CreateUser(NewUser user, Guid campusId);
         Task DefineCampusLead(Guid userId, Guid campusId);
-        Task SendMail(string subject, string body, string fromUserId, string to);
+        Task SendMail(string subject, string body, User fromUser, string to);
     }
 }

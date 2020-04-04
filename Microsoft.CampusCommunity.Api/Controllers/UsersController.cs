@@ -72,14 +72,13 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         [HttpPost]
         [Authorize(Policy = PolicyNames.CampusLeads)]
         public Task<BasicUser> CreateUser(
-            [FromRoute] Guid campusId,
             [FromBody] NewUser user
         )
         {
-            user.CampusId = campusId;
+            var campusId = user.CampusId;
             if (!ModelState.IsValid) throw new MccBadRequestException();
 
-            User.ConfirmGroupMembership(campusId, _authConfig.CampusLeadsGroupId);
+            User.ConfirmGroupMembership(campusId, _authConfig.CampusLeadsAccessGroup);
             return _graphService.CreateUser(user, campusId);
         }
     }
