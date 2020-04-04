@@ -11,13 +11,13 @@ namespace Microsoft.CampusCommunity.Services
 {
     public class GraphGroupService : IGraphGroupService, IGraphCampusService
     {
-        private readonly IGraphService _graphService;
+        private readonly IGraphBaseService _graphService;
         private readonly IAppInsightsService _appInsightsService;
 
         public const string CampusGroupNamePrefix = "Campus";
         public const string HubGroupNamePrefix = "Hub";
 
-        public GraphGroupService(IGraphService graphService, IAppInsightsService appInsightsService)
+        public GraphGroupService(IGraphBaseService graphService, IAppInsightsService appInsightsService)
         {
             _graphService = graphService;
             _appInsightsService = appInsightsService;

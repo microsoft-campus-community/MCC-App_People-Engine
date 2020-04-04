@@ -2,7 +2,7 @@ using Microsoft.Graph;
 
 namespace Microsoft.CampusCommunity.Infrastructure.Interfaces
 {
-    public interface IGraphService
+    public interface IGraphBaseService
     {
         GraphServiceClient Client { get; }
     }

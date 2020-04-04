@@ -32,12 +32,12 @@ namespace Microsoft.CampusCommunity.Services
         // 	""
         // };
 
-        private readonly IGraphService _graphService;
+        private readonly IGraphBaseService _graphService;
         private readonly IGraphGroupService _graphGroupService;
         private readonly IAppInsightsService _appInsightsService;
         private readonly AuthorizationConfiguration _authorizationConfiguration;
 
-        public GraphUserService(IGraphService graphService, IGraphGroupService graphGroupService,
+        public GraphUserService(IGraphBaseService graphService, IGraphGroupService graphGroupService,
             IAppInsightsService appInsightsService, AuthorizationConfiguration authorizationConfiguration)
         {
             _graphService = graphService;

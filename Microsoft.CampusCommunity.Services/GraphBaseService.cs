@@ -8,13 +8,13 @@ using Microsoft.Identity.Client;
 
 namespace Microsoft.CampusCommunity.Services
 {
-    public class GraphService : IGraphService
+    public class GraphBaseService : IGraphBaseService
     {
         private readonly GraphClientConfiguration _configuration;
         private IConfidentialClientApplication _msalClient;
         public GraphServiceClient Client { get; private set; }
 
-        public GraphService(GraphClientConfiguration configuration)
+        public GraphBaseService(GraphClientConfiguration configuration)
         {
             _configuration = configuration;
             BuildGraphClient();

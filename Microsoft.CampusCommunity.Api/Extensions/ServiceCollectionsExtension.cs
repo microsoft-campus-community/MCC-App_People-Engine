@@ -197,7 +197,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             services.AddSingleton<GraphClientConfiguration>(graphConfig);
 
 
-            services.AddScoped<IGraphService, GraphService>();
+            services.AddScoped<IGraphBaseService, GraphBaseService>();
             services.AddScoped<IAppInsightsService, AppInsightsService>();
             services.AddScoped<IGraphCampusService, GraphGroupService>();
             services.AddScoped<IGraphGroupService, GraphGroupService>();
