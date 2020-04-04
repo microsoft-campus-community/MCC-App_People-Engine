@@ -1,3 +1,4 @@
+using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -45,7 +46,8 @@ namespace Microsoft.CampusCommunity.Api
                     builder.AddDebug();
                     builder.AddApplicationInsights();
                 })
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
+                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); })
+                .UseContentRoot(Directory.GetCurrentDirectory());
         }
     }
 }
