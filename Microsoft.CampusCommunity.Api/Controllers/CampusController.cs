@@ -69,6 +69,32 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         }
 
         /// <summary>
+        ///     Get my campus
+        ///     Requirement: All
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("campus/my")]
+        [Authorize(Policy = PolicyNames.Community)]
+        public Task<Hub> GetMyHub()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        ///     Get campus by id
+        ///     Requirement: CampusLeads
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{hubId}/campus/{campusId}")]
+        [Authorize(Policy = PolicyNames.CampusLeads)]
+        public Task<Hub> GetMyHub(Guid hubId, Guid campusId)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         ///     Get all users for a campus
         ///     Requirement: CampusLeads
         /// </summary>
@@ -110,7 +136,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         }
 
         /// <summary>
-        ///     Defines a campus lead for a hub
+        ///     Change campus lead for a hub
         /// </summary>
         /// <param name="campusId"></param>
         /// <param name="hubId"></param>
@@ -126,6 +152,19 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         )
         {
             return _graphUserService.DefineCampusLead(userId, campusId);
+        }
+
+        /// <summary>
+        ///     Delete campus
+        ///     Requirement: GermanLeads
+        /// </summary>
+        /// <returns></returns>
+        [HttpDelete]
+        [Route("{hubId}/campus/{campusId}")]
+        [Authorize(Policy = PolicyNames.GermanLeads)]
+        public Task Delete([FromRoute] Guid hubId, Guid campusId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

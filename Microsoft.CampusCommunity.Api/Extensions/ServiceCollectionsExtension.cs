@@ -131,7 +131,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
                     policy => { policy.Requirements.Add(germanLeadsPolicyGroups); });
                 options.AddPolicy(PolicyNames.HubLeads, policy => { policy.Requirements.Add(hubLeadsGroup); });
                 options.AddPolicy(PolicyNames.CampusLeads, policy => { policy.Requirements.Add(campusLeadsGroup); });
-                options.AddPolicy(PolicyNames.General, policy => { policy.Requirements.Add(generalGroup); });
+                options.AddPolicy(PolicyNames.Community, policy => { policy.Requirements.Add(generalGroup); });
             });
 
             services.AddScoped<IAuthorizationHandler, GroupMembershipPolicyHandler>();

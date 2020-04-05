@@ -6,6 +6,6 @@
         public const string GermanLeads = "GermanLeads";
         public const string HubLeads = "HubLeads";
         public const string CampusLeads = "CampusLeads";
-        public const string General = "General";
+        public const string Community = "General";
     }
 }

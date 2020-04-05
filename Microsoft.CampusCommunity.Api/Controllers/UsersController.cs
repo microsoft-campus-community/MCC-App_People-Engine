@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -53,7 +52,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         /// <param name="scope"></param>
         /// <returns></returns>
         [HttpGet]
-        [Authorize(Policy = PolicyNames.General)]
+        [Authorize(Policy = PolicyNames.Community)]
         [Route("current")]
         public Task<BasicUser> GetCurrentUser(
             [FromQuery(Name = "scope")] UserScope scope = UserScope.Basic
