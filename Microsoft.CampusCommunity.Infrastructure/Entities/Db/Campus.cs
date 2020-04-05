@@ -7,13 +7,15 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Db
         public string Name { get; set; }
         public Guid Lead { get; set; }
         public Guid AadGroupId { get; set; }
+        public string UniversityName { get; set; }
 
         /// <inheritdoc />
-        public Campus(string name, Guid lead, Guid aadGroupId, Guid modifiedBy) : base(modifiedBy)
+        public Campus(string name, Guid lead, Guid aadGroupId, string universityName, Guid modifiedBy) : base(modifiedBy)
         {
             Name = name;
             Lead = lead;
             AadGroupId = aadGroupId;
+            UniversityName = universityName;
         }
     }
 }
