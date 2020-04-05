@@ -19,5 +19,10 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Db
             AadGroupId = aadGroupId;
             Campus = new List<Campus>();
         }
+
+        /// <inheritdoc />
+        public Hub() : base()
+        {
+        }
     }
 }

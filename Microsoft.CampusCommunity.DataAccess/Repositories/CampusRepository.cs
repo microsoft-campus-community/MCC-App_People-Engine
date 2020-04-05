@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Db;
+using Microsoft.EntityFrameworkCore;
 
 namespace Microsoft.CampusCommunity.DataAccess.Repositories
 {
@@ -15,7 +16,7 @@ namespace Microsoft.CampusCommunity.DataAccess.Repositories
         /// <inheritdoc />
         protected override IQueryable<Campus> GetIncludes()
         {
-            return DbSet;
+            return DbSet.Include(e => e.Hub);
         }
 
         #endregion

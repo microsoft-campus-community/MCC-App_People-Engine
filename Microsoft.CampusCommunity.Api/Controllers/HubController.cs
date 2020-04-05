@@ -56,7 +56,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
 
         /// <summary>
         ///     Get hub by id
-        ///     Requirement: CampusLeads
+        ///     Requirement: CampusLeads - Campus Leads can get their own hub - hub leads can get any hub
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -65,7 +65,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         public Task<Hub> GetHubById(Guid id)
         {
             var userId = AuthenticationHelper.GetUserIdFromToken(User);
-            return _service.GetHubById(userId, id);
+            return _service.GetHubById(userId, User.IsCampusLead(_authConfig), id);
         }
 
         /// <summary>
@@ -77,7 +77,8 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         [Authorize(Policy = PolicyNames.GermanLeads)]
         public Task<Hub> Create([FromBody] Hub entity)
         {
-            return _service.Create(entity, ModelState.IsValid);
+            var userId = AuthenticationHelper.GetUserIdFromToken(User);
+            return _service.Create(userId, entity, ModelState.IsValid);
         }
 
         /// <summary>
@@ -90,7 +91,8 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         [Authorize(Policy = PolicyNames.HubLeads)]
         public Task<Hub> Update([FromRoute] Guid id, [FromBody] Hub entity)
         {
-            return _service.Update(entity, ModelState.IsValid);
+            var userId = AuthenticationHelper.GetUserIdFromToken(User);
+            return _service.Update(userId, entity, ModelState.IsValid);
         }
 
         /// <summary>
@@ -103,7 +105,8 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         [Authorize(Policy = PolicyNames.GermanLeads)]
         public Task<Hub> ChangeHubLead([FromRoute] Guid id, [FromQuery] Guid newLead)
         {
-            return _service.ChangeHubLead(id, newLead);
+            var userId = AuthenticationHelper.GetUserIdFromToken(User);
+            return _service.ChangeHubLead(userId, id, newLead);
         }
 
         /// <summary>

@@ -19,6 +19,9 @@ namespace Microsoft.CampusCommunity.DataAccess.DbConfigurations
             b.Property(e => e.Name).IsRequired();
             b.Property(e => e.Lead).IsRequired();
             b.Property(e => e.AadGroupId).IsRequired();
+
+            b.HasMany(e => e.Campus)
+                .WithOne(c => c.Hub);
         }
 
         #endregion

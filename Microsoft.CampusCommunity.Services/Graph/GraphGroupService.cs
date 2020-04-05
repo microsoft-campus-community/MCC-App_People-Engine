@@ -34,11 +34,11 @@ namespace Microsoft.CampusCommunity.Services.Graph
                 await _graphService.Client.Groups[groupId.ToString()].Members.References.Request().AddAsync(user);
         }
 
-        public async Task<MccGroup> GetGroupById(Guid campusId)
+        public async Task<MccGraphGroup> GetGroupById(Guid campusId)
         {
             var group = await _graphService.Client.Groups[campusId.ToString()].Request().GetAsync();
 
-            return new MccGroup()
+            return new MccGraphGroup()
             {
                 Id = Guid.Parse(group.Id),
                 Name = group.DisplayName
@@ -52,19 +52,41 @@ namespace Microsoft.CampusCommunity.Services.Graph
             return groupMembers.OfType<User>().Select(member => member).ToList();
         }
 
-        public async Task<IEnumerable<MccGroup>> GetAllGroups()
+        public async Task<IEnumerable<MccGraphGroup>> GetAllGroups()
         {
             var dirObjects = await _graphService.Client.Groups.Request().GetAsync();
-            return dirObjects.Select(dirObject => new MccGroup()
+            return dirObjects.Select(dirObject => new MccGraphGroup()
                 {Id = Guid.Parse(dirObject.Id), Name = dirObject.DisplayName}).ToList();
         }
 
-        public Task<IEnumerable<MccGroup>> UserMemberOf(Guid userId)
+        public Task<IEnumerable<MccGraphGroup>> UserMemberOf(Guid userId)
         {
             return UserMemberOf(userId.ToString());
         }
 
-        public async Task<IEnumerable<MccGroup>> UserMemberOf(string userId)
+        /// <inheritdoc />
+        public async Task<MccGraphGroup> CreateGroup(string name, Guid owner)
+        {
+            var newGroup = new Group()
+            {
+                DisplayName = name,
+                MailEnabled = true,
+                MailNickname = name.Replace(' ', '.') + "@campus-community.org",
+                SecurityEnabled = true
+            };
+            newGroup = await _graphService.Client.Groups.Request().AddAsync(newGroup);
+            return MccGraphGroup.FromGraph(newGroup);
+        }
+
+        /// <inheritdoc />
+        public async Task ChangeGroupOwner(Guid groupId, Guid newOwner)
+        {
+            // get user for new owner
+            var user = await _graphService.Client.Users[newOwner.ToString()].Request().GetAsync();
+            await _graphService.Client.Groups[groupId.ToString()].Owners.References.Request().AddAsync(user);
+        }
+
+        public async Task<IEnumerable<MccGraphGroup>> UserMemberOf(string userId)
         {
             IUserMemberOfCollectionWithReferencesPage groupsCollection;
             try
@@ -79,10 +101,10 @@ namespace Microsoft.CampusCommunity.Services.Graph
             }
 
             if (groupsCollection == null)
-                return new List<MccGroup>();
+                return new List<MccGraphGroup>();
 
 
-            var result = new List<MccGroup>();
+            var result = new List<MccGraphGroup>();
             if (groupsCollection.Count == 0)
                 return result;
 
@@ -97,7 +119,7 @@ namespace Microsoft.CampusCommunity.Services.Graph
                     }
 
 
-                    result.Add(new MccGroup()
+                    result.Add(new MccGraphGroup()
                         {
                             Name = @group.DisplayName,
                             Id = groupId
@@ -124,7 +146,7 @@ namespace Microsoft.CampusCommunity.Services.Graph
             };
 
             var dirObjects = await _graphService.Client.Groups.Request(queryOptions).GetAsync();
-            return dirObjects.Select(dirObject => new Campus()
+            return dirObjects.Select(dirObject => new Campus(Guid.Empty)
                 {Id = Guid.Parse(dirObject.Id), Name = dirObject.DisplayName}).ToList();
         }
 

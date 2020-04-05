@@ -12,11 +12,18 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Db
         public DateTime ModifiedAt { get; set; }
         public Guid? ModifiedBy { get; set; }
 
-        protected BaseEntity(Guid modifiedBy)
+        protected BaseEntity(Guid? modifiedBy)
         {
             CreatedAt = DateTime.UtcNow;
             ModifiedAt = DateTime.UtcNow;
             ModifiedBy = modifiedBy;
+        }
+
+        protected BaseEntity()
+        {
+            CreatedAt = DateTime.UtcNow;
+            ModifiedAt = DateTime.UtcNow;
+            ModifiedBy = Guid.Empty;
         }
     }
 }
