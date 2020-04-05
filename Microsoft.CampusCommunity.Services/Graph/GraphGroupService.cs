@@ -7,7 +7,7 @@ using Microsoft.CampusCommunity.Infrastructure.Helpers;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Microsoft.Graph;
 
-namespace Microsoft.CampusCommunity.Services
+namespace Microsoft.CampusCommunity.Services.Graph
 {
     public class GraphGroupService : IGraphGroupService, IGraphCampusService
     {
