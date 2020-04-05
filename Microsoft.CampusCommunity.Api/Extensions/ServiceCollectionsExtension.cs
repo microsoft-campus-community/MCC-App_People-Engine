@@ -146,7 +146,9 @@ namespace Microsoft.CampusCommunity.Api.Extensions
 
         private static IServiceCollection AddContext(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = configuration.GetConnectionString("connectionString");
+            var connectionString = configuration.GetConnectionString("default");
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new MccBadConfigurationException($"connectionString is not set");
             services.AddDbContext<MccContext>(options => { options.UseSqlServer(connectionString); });
             return services;
         }
