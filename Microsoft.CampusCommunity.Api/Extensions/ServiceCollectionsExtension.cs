@@ -120,7 +120,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             var generalGroup = new GroupMembershipRequirement(new[]
             {
                 authConfig.InternalDevelopmentGroupId, authConfig.GermanLeadsGroupId, authConfig.HubLeadsGroupId,
-                authConfig.CampusLeadsGroupId, authConfig.AllCompanyGroupId
+                authConfig.CampusLeadsGroupId, authConfig.CommunityGroupId
             });
 
             services.AddAuthorization(options =>

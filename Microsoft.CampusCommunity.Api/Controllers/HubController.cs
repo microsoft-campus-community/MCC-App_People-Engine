@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
+using Microsoft.CampusCommunity.Infrastructure.Helpers;
+using Microsoft.CampusCommunity.Infrastructure.Interfaces;
+using Microsoft.Graph;
 
 namespace Microsoft.CampusCommunity.Api.Controllers
 {
@@ -17,18 +20,24 @@ namespace Microsoft.CampusCommunity.Api.Controllers
     public class HubController : ControllerBase
     {
         private readonly AuthorizationConfiguration _authConfig;
+        private readonly IHubControllerService _service;
+
+        public HubController(IHubControllerService service)
+        {
+            _service = service;
+        }
 
 
         /// <summary>
         ///     Get all hubs.
-        ///     Requirement: CampusLeads
+        ///     Requirement: HubLeads
         /// </summary>
         /// <returns></returns>
         [HttpGet]
         [Authorize(Policy = PolicyNames.HubLeads)]
         public Task<IEnumerable<Hub>> GetAll()
         {
-            throw new NotImplementedException();
+            return _service.GetAll();
         }
 
         /// <summary>
@@ -41,7 +50,8 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         [Authorize(Policy = PolicyNames.CampusLeads)]
         public Task<Hub> GetMyHub()
         {
-            throw new NotImplementedException();
+            var userId = AuthenticationHelper.GetUserIdFromToken(User);
+            return _service.GetMyHub(userId);
         }
 
         /// <summary>
@@ -52,9 +62,10 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         [HttpGet]
         [Route("{hubId}")]
         [Authorize(Policy = PolicyNames.CampusLeads)]
-        public Task<Hub> GetMyHub(Guid id)
+        public Task<Hub> GetHubById(Guid id)
         {
-            throw new NotImplementedException();
+            var userId = AuthenticationHelper.GetUserIdFromToken(User);
+            return _service.GetHubById(userId, id);
         }
 
         /// <summary>
@@ -66,7 +77,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         [Authorize(Policy = PolicyNames.GermanLeads)]
         public Task<Hub> Create([FromBody] Hub entity)
         {
-            throw new NotImplementedException();
+            return _service.Create(entity, ModelState.IsValid);
         }
 
         /// <summary>
@@ -79,7 +90,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         [Authorize(Policy = PolicyNames.HubLeads)]
         public Task<Hub> Update([FromRoute] Guid id, [FromBody] Hub entity)
         {
-            throw new NotImplementedException();
+            return _service.Update(entity, ModelState.IsValid);
         }
 
         /// <summary>
@@ -92,7 +103,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         [Authorize(Policy = PolicyNames.GermanLeads)]
         public Task<Hub> ChangeHubLead([FromRoute] Guid id, [FromQuery] Guid newLead)
         {
-            throw new NotImplementedException();
+            return _service.ChangeHubLead(id, newLead);
         }
 
         /// <summary>
@@ -103,9 +114,10 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         [HttpDelete]
         [Route("{id}")]
         [Authorize(Policy = PolicyNames.GermanLeads)]
-        public Task Delete([FromRoute] Guid id)
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            throw new NotImplementedException();
+            await _service.Delete(id);
+            return NoContent();
         }
     }
 }

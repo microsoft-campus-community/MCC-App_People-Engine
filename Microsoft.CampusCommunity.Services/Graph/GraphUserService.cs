@@ -87,7 +87,7 @@ namespace Microsoft.CampusCommunity.Services.Graph
             graphUser = await _graphService.Client.Users.Request().AddAsync(graphUser);
 
             // add user to the corresponding groups
-            await _graphGroupService.AddUserToGroup(graphUser, _authorizationConfiguration.AllCompanyGroupId);
+            await _graphGroupService.AddUserToGroup(graphUser, _authorizationConfiguration.CommunityGroupId);
             await _graphGroupService.AddUserToGroup(graphUser, campusId);
 
             // add licence

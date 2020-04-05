@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.CampusCommunity.Infrastructure.Configuration;
 using Microsoft.CampusCommunity.Infrastructure.Exceptions;
 
 namespace Microsoft.CampusCommunity.Infrastructure.Helpers
@@ -41,5 +42,44 @@ namespace Microsoft.CampusCommunity.Infrastructure.Helpers
         {
             user.ConfirmGroupMembership(groupId, new[] {exceptGroup});
         }
+
+        /// <summary>
+        /// Extension method to check if user is MCC member
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="authorizationConfiguration"></param>
+        /// <returns></returns>
+        public static bool IsMccMember(this ClaimsPrincipal user, AuthorizationConfiguration authorizationConfiguration)
+        {
+            return HasGroupId(user, authorizationConfiguration.CommunityGroupId);
+        }
+
+        /// <summary>
+        /// Extension method to see if user is campus lead
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="authorizationConfiguration"></param>
+        /// <returns></returns>
+        public static bool IsCampusLead(this ClaimsPrincipal user, AuthorizationConfiguration authorizationConfiguration)
+        {
+            return HasGroupId(user, authorizationConfiguration.CampusLeadsGroupId);
+        }
+
+        /// <summary>
+        /// Extension method to see if user is hub lead
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="authorizationConfiguration"></param>
+        /// <returns></returns>
+        public static bool IsHubLead(this ClaimsPrincipal user, AuthorizationConfiguration authorizationConfiguration)
+        {
+            return HasGroupId(user, authorizationConfiguration.HubLeadsGroupId);
+        }
+
+        private static bool HasGroupId(ClaimsPrincipal user, Guid groupId)
+        {
+            return AuthenticationHelper.GetAaDGroups(user).Any(g => g == groupId);
+        }
+
     }
 }

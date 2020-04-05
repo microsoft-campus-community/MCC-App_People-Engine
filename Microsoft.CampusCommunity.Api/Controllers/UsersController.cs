@@ -64,7 +64,6 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         /// <summary>
         /// Create a new user
         /// </summary>
-        /// <param name="campusId">Campus Id of the new user to be created under</param>
         /// <param name="user"></param>
         /// <returns></returns>
         /// <exception cref="MccBadRequestException"></exception>

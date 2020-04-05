@@ -15,4 +15,8 @@
     <ProjectReference Include="..\Microsoft.CampusCommunity.Infrastructure\Microsoft.CampusCommunity.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controller\" />
+  </ItemGroup>
+
 </Project>
