@@ -65,3 +65,4 @@ namespace Microsoft.CampusCommunity.DataAccess.Migrations
         }
     }
 }
+ 
