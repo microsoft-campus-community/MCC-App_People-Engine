@@ -7,10 +7,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.CampusCommunity.Api.Authorization;
 using Microsoft.CampusCommunity.DataAccess;
+using Microsoft.CampusCommunity.DataAccess.Repositories;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
+using Microsoft.CampusCommunity.Infrastructure.Entities.Db;
 using Microsoft.CampusCommunity.Infrastructure.Exceptions;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Microsoft.CampusCommunity.Services;
+using Microsoft.CampusCommunity.Services.Controller;
+using Microsoft.CampusCommunity.Services.Db;
 using Microsoft.CampusCommunity.Services.Graph;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -198,6 +202,15 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             var graphConfigSection = configuration.GetSection(GraphAuthenticationSettingsSectionName);
             var graphConfig = graphConfigSection.Get<GraphClientConfiguration>();
             services.AddSingleton<GraphClientConfiguration>(graphConfig);
+
+            services.AddScoped<IBaseGenericRepository<Campus>, CampusRepository>();
+            services.AddScoped<IBaseGenericRepository<Hub>, HubRepository>();
+
+            services.AddScoped<IDbService<Campus>, DbCampusService>();
+            services.AddScoped<IDbService<Hub>, DbHubService>();
+
+            services.AddScoped<ICampusControllerService, CampusControllerService>();
+            services.AddScoped<IHubControllerService, HubControllerService>();
 
 
             services.AddScoped<IGraphBaseService, GraphBaseService>();

@@ -51,7 +51,7 @@ namespace Microsoft.CampusCommunity.Infrastructure.Helpers
         /// <returns></returns>
         public static bool IsMccMember(this ClaimsPrincipal user, AuthorizationConfiguration authorizationConfiguration)
         {
-            return HasGroupId(user, authorizationConfiguration.CommunityGroupId);
+            return user.HasGroupId(authorizationConfiguration.CommunityGroupId);
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Microsoft.CampusCommunity.Infrastructure.Helpers
         /// <returns></returns>
         public static bool IsCampusLead(this ClaimsPrincipal user, AuthorizationConfiguration authorizationConfiguration)
         {
-            return HasGroupId(user, authorizationConfiguration.CampusLeadsGroupId);
+            return user.HasGroupId(authorizationConfiguration.CampusLeadsGroupId);
         }
 
         /// <summary>
@@ -73,10 +73,10 @@ namespace Microsoft.CampusCommunity.Infrastructure.Helpers
         /// <returns></returns>
         public static bool IsHubLead(this ClaimsPrincipal user, AuthorizationConfiguration authorizationConfiguration)
         {
-            return HasGroupId(user, authorizationConfiguration.HubLeadsGroupId);
+            return user.HasGroupId(authorizationConfiguration.HubLeadsGroupId);
         }
 
-        private static bool HasGroupId(ClaimsPrincipal user, Guid groupId)
+        public static bool HasGroupId(this ClaimsPrincipal user, Guid groupId)
         {
             return AuthenticationHelper.GetAaDGroups(user).Any(g => g == groupId);
         }

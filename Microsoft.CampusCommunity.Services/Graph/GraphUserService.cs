@@ -17,6 +17,7 @@ namespace Microsoft.CampusCommunity.Services.Graph
     public class GraphUserService : IGraphUserService
     {
         public const string UserJobTitleCampusLead = "Campus Lead";
+        public const string UserJobTitleHubLead = "Hub Lead";
         public const string UserJobTitleMember = "Member";
 
         // TODO: Define in config
@@ -82,7 +83,7 @@ namespace Microsoft.CampusCommunity.Services.Graph
             // get campus and lead for user
             var campus = await _graphGroupService.GetGroupById(campusId);
 
-            var graphUser = CreateGraphUser(user, Campus.GetFromMccGroup(campus));
+            var graphUser = CreateGraphUser(user, Campus.FromMccGroup(campus));
             var userPassword = graphUser.PasswordProfile.Password.ToSecureString();
             graphUser = await _graphService.Client.Users.Request().AddAsync(graphUser);
 
@@ -101,6 +102,17 @@ namespace Microsoft.CampusCommunity.Services.Graph
             await SendNewUserWelcomeMail(graphUser, user, lead, userPassword);
 
             return BasicUser.FromGraphUser(graphUser);
+        }
+
+        /// <inheritdoc />
+        public async Task<Guid> GetCampusIdForUser(Guid userId)
+        {
+            var user = await FindById(userId);
+
+            // return campus id if guid can be parsed
+            if (Guid.TryParse(user.Department, out var campusId))
+                return campusId;
+            return Guid.Empty;
         }
 
         private async Task AssignLicense(User user)
@@ -157,11 +169,56 @@ namespace Microsoft.CampusCommunity.Services.Graph
                 }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="newLead"></param>
+        /// <param name="campusLeads">Ids of campus leads under hub</param>
+        /// <param name="hubId"></param>
+        /// <returns></returns>
+        public async Task DefineHubLead(Guid newLead, IEnumerable<Guid> campusLeads, Guid hubId)
+        {
+            var user = await FindById(newLead);
+            var hub = await _graphGroupService.GetGroupById(hubId);
+            
+            // make sure the user has the correct job title
+            user.JobTitle = UserJobTitleHubLead;
+
+            // add the campus lead to the campusLeads group
+            await _graphGroupService.AddUserToGroup(user, _authorizationConfiguration.HubLeadsGroupId);
+
+            // change the manager of all members of the group to the new campus lead
+
+            // where() -> don't change the manager of the lead itself.
+            foreach (var member in campusLeads.Where(m => m.ToString() != user.Id))
+                try
+                {
+                    await AssignManager(member, user.Id);
+                }
+                catch (Exception e)
+                {
+                    _appInsightsService.TrackException(null,
+                        new Exception($"Could not assign manager {user.Id} to user {user.Id} ({user.MailNickname}).",
+                            e), Guid.Empty);
+                }
+        }
+
         public Task AssignManager(User user, string managerId)
         {
             return _graphService
                 .Client
                 .Users[user.Id]
+                .Manager
+                .Reference
+                .Request()
+                .PutAsync(managerId);
+        }
+
+        public Task AssignManager(Guid userId, string managerId)
+        {
+            return _graphService
+                .Client
+                .Users[userId.ToString()]
                 .Manager
                 .Reference
                 .Request()

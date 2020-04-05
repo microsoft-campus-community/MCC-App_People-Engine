@@ -80,7 +80,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
 
         /// <summary>
         ///     Get campus by id
-        ///     Requirement: Community (members and campus leads can only get their campus. Hub Leads can get their campus)
+        ///     Requirement: Community (members and campus leads can only get their campus. Hub Leads can get their campus (plural))
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -88,9 +88,8 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         [Authorize(Policy = PolicyNames.Community)]
         public Task<Campus> GetById(Guid hubId, Guid campusId)
         {
-            var userId = AuthenticationHelper.GetUserIdFromToken(User);
             User.ConfirmGroupMembership(campusId, _authConfig.HubLeadsGroupId);
-            return _service.GetById(userId, campusId, User.IsHubLead(_authConfig));
+            return _service.GetById(campusId, User);
         }
 
         /// <summary>
@@ -110,9 +109,8 @@ namespace Microsoft.CampusCommunity.Api.Controllers
             [FromQuery(Name = "scope")] UserScope scope = UserScope.Basic
         )
         {
-            var userId = AuthenticationHelper.GetUserIdFromToken(User);
             User.ConfirmGroupMembership(campusId, _authConfig.HubLeadsGroupId);
-            return _service.GetUsers(userId, campusId, User.IsHubLead(_authConfig), scope);
+            return _service.GetUsers(campusId, User, scope);
         }
 
         /// <summary>
@@ -130,7 +128,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
             [FromBody] Campus campus
         )
         {
-            return _service.CreateCampus(hubId, campus, ModelState.IsValid);
+            return _service.CreateCampus(User, hubId, campus, ModelState.IsValid);
         }
 
         /// <summary>
@@ -149,8 +147,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
             [FromQuery] Guid newLeadId
         )
         {
-            var userId = AuthenticationHelper.GetUserIdFromToken(User);
-            return _service.DefineCampusLead(userId, campusId, newLeadId);
+            return _service.DefineCampusLead(User, campusId, newLeadId);
         }
 
         /// <summary>
