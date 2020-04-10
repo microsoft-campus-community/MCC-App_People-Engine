@@ -51,6 +51,7 @@ namespace Microsoft.CampusCommunity.Infrastructure.Middlewares
                 MccNotAuthenticatedException _ => (int) HttpStatusCode.Unauthorized,
                 MccNotAuthorizedException _ => (int) HttpStatusCode.Forbidden,
                 MccBadRequestException _ => (int) HttpStatusCode.BadRequest,
+                MccNotFoundException _ => (int) HttpStatusCode.NotFound,
                 MccExceptionBase _ => (int) HttpStatusCode.InternalServerError,
                 _ => (int) HttpStatusCode.InternalServerError
             };

@@ -22,9 +22,10 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         private readonly AuthorizationConfiguration _authConfig;
         private readonly IHubControllerService _service;
 
-        public HubController(IHubControllerService service)
+        public HubController(IHubControllerService service, AuthorizationConfiguration authConfig)
         {
             _service = service;
+            _authConfig = authConfig;
         }
 
 
@@ -62,10 +63,10 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         [HttpGet]
         [Route("{hubId}")]
         [Authorize(Policy = PolicyNames.CampusLeads)]
-        public Task<Hub> GetHubById(Guid id)
+        public Task<Hub> GetHubById(Guid hubId)
         {
             var userId = AuthenticationHelper.GetUserIdFromToken(User);
-            return _service.GetHubById(userId, User.IsCampusLead(_authConfig), id);
+            return _service.GetHubById(userId, User.IsCampusLead(_authConfig), hubId);
         }
 
         /// <summary>
