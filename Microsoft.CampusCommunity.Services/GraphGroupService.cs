@@ -11,13 +11,13 @@ namespace Microsoft.CampusCommunity.Services
 {
     public class GraphGroupService : IGraphGroupService, IGraphCampusService
     {
-        private readonly IGraphService _graphService;
+        private readonly IGraphBaseService _graphService;
         private readonly IAppInsightsService _appInsightsService;
 
         public const string CampusGroupNamePrefix = "Campus";
         public const string HubGroupNamePrefix = "Hub";
 
-        public GraphGroupService(IGraphService graphService, IAppInsightsService appInsightsService)
+        public GraphGroupService(IGraphBaseService graphService, IAppInsightsService appInsightsService)
         {
             _graphService = graphService;
             _appInsightsService = appInsightsService;
@@ -66,8 +66,17 @@ namespace Microsoft.CampusCommunity.Services
 
         public async Task<IEnumerable<MccGroup>> UserMemberOf(string userId)
         {
-            var groupsCollection =
-                await _graphService.Client.Users[userId].MemberOf.Request().GetAsync();
+            IUserMemberOfCollectionWithReferencesPage groupsCollection;
+            try
+            {
+                groupsCollection = await _graphService.Client.Users[userId].MemberOf.Request().GetAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                Console.WriteLine(_graphService.Client.Users[userId].MemberOf.Request().RequestUrl);
+                throw;
+            }
 
             if (groupsCollection == null)
                 return new List<MccGroup>();

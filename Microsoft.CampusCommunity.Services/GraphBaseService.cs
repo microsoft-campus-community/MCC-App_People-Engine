@@ -8,30 +8,32 @@ using Microsoft.Identity.Client;
 
 namespace Microsoft.CampusCommunity.Services
 {
-    public class GraphService : IGraphService
+    public class GraphBaseService : IGraphBaseService
     {
-        private readonly GraphClientConfiguration _configuration;
         private IConfidentialClientApplication _msalClient;
         public GraphServiceClient Client { get; private set; }
+        public GraphClientConfiguration Configuration { get; }
 
-        public GraphService(GraphClientConfiguration configuration)
+
+        public GraphBaseService(GraphClientConfiguration configuration)
         {
-            _configuration = configuration;
+            Configuration = configuration;
             BuildGraphClient();
         }
 
         private void BuildGraphClient()
         {
             // check if configuration contains client secret
-            if (string.IsNullOrWhiteSpace(_configuration.ClientSecret))
+            if (string.IsNullOrWhiteSpace(Configuration.ClientSecret))
             {
                 throw new MccBadConfigurationException("Graph API client secret is not configured");
             }
 
-            _msalClient = ConfidentialClientApplicationBuilder.Create(_configuration.ClientId)
-                .WithClientSecret(_configuration.ClientSecret)
-                .WithAuthority(new Uri(_configuration.Authority))
+            _msalClient = ConfidentialClientApplicationBuilder.Create(Configuration.ClientId)
+                .WithClientSecret(Configuration.ClientSecret)
+                .WithAuthority(new Uri(Configuration.Authority))
                 .Build();
+            
             var authProvider = new ClientCredentialProvider(_msalClient);
             Client = new GraphServiceClient(authProvider);
         }

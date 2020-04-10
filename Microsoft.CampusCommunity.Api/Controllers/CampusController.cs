@@ -64,6 +64,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
             [FromRoute] Guid hubId
         )
         {
+            User.ConfirmGroupMembership(hubId, _authConfig.HubLeadsAccessGroup);
             return _graphService.GetAllCampusForHub(hubId);
         }
 
@@ -85,8 +86,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         )
         {
             // Authorize Campus
-            User.ConfirmGroupMembership(campusId,
-                new[] {_authConfig.GermanLeadsGroupId, _authConfig.InternalDevelopmentGroupId});
+            User.ConfirmGroupMembership(campusId, _authConfig.CampusLeadsAccessGroup);
             return _graphService.GetCampusUsers(campusId);
         }
 

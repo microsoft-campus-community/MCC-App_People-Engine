@@ -52,7 +52,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             services.AddAuthentication(authenticationOptions);
             services.AddAuthorization(configuration);
             services.AddContext(configuration);
-            services.AddSwagger(authenticationOptions);
+            services.AddSwagger(authenticationOptions, configuration);
             services.AddMccServices(configuration);
 
             return services;
@@ -147,14 +147,16 @@ namespace Microsoft.CampusCommunity.Api.Extensions
         }
 
         private static IServiceCollection AddSwagger(this IServiceCollection services,
-            AadAuthenticationConfiguration authenticationOptions)
+            AadAuthenticationConfiguration authenticationOptions, IConfiguration configuration)
         {
+            var swaggerConfigurationSection = configuration.GetSection("SwaggerConfiguration");
+
             services.AddSwaggerGen(o =>
             {
                 o.SwaggerDoc("v1", new OpenApiInfo
                 {
-                    Title = "Microsoft Campus Community API",
-                    Description = "API for the Microsoft Campus Community Management API Backend",
+                    Title = swaggerConfigurationSection["Title"],
+                    Description = string.Format(swaggerConfigurationSection["Description"], authenticationOptions.Domain, authenticationOptions.TenantId),
                     Version = "1.0",
                     Contact = new OpenApiContact()
                         {Email = "info@campus-community.org", Name = "Microsoft Campus Community"}
@@ -197,7 +199,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             services.AddSingleton<GraphClientConfiguration>(graphConfig);
 
 
-            services.AddScoped<IGraphService, GraphService>();
+            services.AddScoped<IGraphBaseService, GraphBaseService>();
             services.AddScoped<IAppInsightsService, AppInsightsService>();
             services.AddScoped<IGraphCampusService, GraphGroupService>();
             services.AddScoped<IGraphGroupService, GraphGroupService>();

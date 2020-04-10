@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
 using Microsoft.CampusCommunity.Infrastructure.Exceptions;
+using Microsoft.CampusCommunity.Infrastructure.Extensions;
 using Microsoft.CampusCommunity.Infrastructure.Helpers;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Microsoft.Graph;
@@ -30,12 +32,12 @@ namespace Microsoft.CampusCommunity.Services
         // 	""
         // };
 
-        private readonly IGraphService _graphService;
+        private readonly IGraphBaseService _graphService;
         private readonly IGraphGroupService _graphGroupService;
         private readonly IAppInsightsService _appInsightsService;
         private readonly AuthorizationConfiguration _authorizationConfiguration;
 
-        public GraphUserService(IGraphService graphService, IGraphGroupService graphGroupService,
+        public GraphUserService(IGraphBaseService graphService, IGraphGroupService graphGroupService,
             IAppInsightsService appInsightsService, AuthorizationConfiguration authorizationConfiguration)
         {
             _graphService = graphService;
@@ -62,11 +64,11 @@ namespace Microsoft.CampusCommunity.Services
             return BasicUser.FromGraphUser(user);
         }
 
-        public async Task<User> GetLeadForCampus(string campusName)
+        public async Task<User> GetLeadForCampus(Guid campusId)
         {
             var queryOptions = new List<QueryOption>
             {
-                new QueryOption("$filter", $@"jobTitle eq '{UserJobTitleCampusLead}' AND companyName eq '{campusName}'")
+                new QueryOption("$filter", $@"jobTitle eq '{UserJobTitleCampusLead}' AND department eq '{campusId}'")
             };
 
             var userResult = await _graphService.Client.Users.Request(queryOptions).GetAsync();
@@ -80,21 +82,23 @@ namespace Microsoft.CampusCommunity.Services
             // get campus and lead for user
             var campus = await _graphGroupService.GetGroupById(campusId);
 
-            var graphUser = CreateGraphUser(user, campus);
-            await _graphService.Client.Users.Request().AddAsync(graphUser);
+            var graphUser = CreateGraphUser(user, Campus.GetFromMccGroup(campus));
+            var userPassword = graphUser.PasswordProfile.Password.ToSecureString();
+            graphUser = await _graphService.Client.Users.Request().AddAsync(graphUser);
 
             // add user to the corresponding groups
             await _graphGroupService.AddUserToGroup(graphUser, _authorizationConfiguration.AllCompanyGroupId);
+            await _graphGroupService.AddUserToGroup(graphUser, campusId);
 
             // add licence
             await AssignLicense(graphUser);
 
             // add new user as additional direct to lead
-            var lead = await GetLeadForCampus(campus.Name);
+            var lead = await GetLeadForCampus(campus.Id);
             await AssignManager(graphUser, lead.Id);
 
             // Send welcome mail
-            await SendNewUserWelcomeMail(graphUser, user, lead);
+            await SendNewUserWelcomeMail(graphUser, user, lead, userPassword);
 
             return BasicUser.FromGraphUser(graphUser);
         }
@@ -123,7 +127,7 @@ namespace Microsoft.CampusCommunity.Services
             var campus = await _graphGroupService.GetGroupById(campusId);
 
             // find existing lead of campus (if possible)
-            User existingLead = await GetLeadForCampus(campus.Name);
+            User existingLead = await GetLeadForCampus(campus.Id);
             if (existingLead != null)
                 throw new MccBadRequestException(
                     $"Unable to assign campus lead because there is already an existing lead defined ({existingLead.Mail})");
@@ -185,11 +189,27 @@ namespace Microsoft.CampusCommunity.Services
             return userResult;
         }
 
-        public async Task SendMail(string subject, string body, string fromUserId, string to)
+        public async Task SendMail(string subject, string body, User fromUser, string to)
         {
             var message = new Message
             {
                 Subject = subject,
+                Sender = new Recipient()
+                {
+                    EmailAddress = new EmailAddress()
+                    {
+                        Name = fromUser.DisplayName,
+                        Address = fromUser.Mail
+                    }
+                },
+                From = new Recipient()
+                {
+                    EmailAddress = new EmailAddress()
+                    {
+                        Name = fromUser.DisplayName,
+                        Address = fromUser.Mail
+                    }
+                },
                 Body = new ItemBody
                 {
                     ContentType = BodyType.Text,
@@ -204,28 +224,30 @@ namespace Microsoft.CampusCommunity.Services
                             Address = to
                         }
                     }
-                },
-                CcRecipients = new List<Recipient>()
+                }
             };
-
-            await _graphService.Client.Users[fromUserId]
+            var r = _graphService.Client.Users[fromUser.Id]
                 .SendMail(message, false)
-                .Request()
-                .PostAsync();
+                .Request();
+            await r.PostAsync();
         }
 
-        private static User CreateGraphUser(NewUser newUser, MccGroup campus)
+        private static User CreateGraphUser(NewUser newUser, Campus campus)
         {
             var user = new User()
             {
-                HireDate = DateTime.UtcNow,
+                //HireDate = DateTime.UtcNow,
                 UserPrincipalName = newUser.Email,
                 JobTitle = UserJobTitleMember,
                 GivenName = newUser.FirstName,
                 DisplayName = $"{newUser.FirstName} {newUser.LastName}",
                 Department = campus.Id.ToString(),
                 CompanyName = campus.Name,
-                Surname = newUser.LastName
+                Surname = newUser.LastName,
+                AccountEnabled = true,
+                MailNickname = $"{newUser.FirstName}.{newUser.LastName}",
+                OfficeLocation = campus.CampusLocation,
+                UsageLocation = "DE"
             };
 
             var generatedPassword = AuthenticationHelper.GenerateRandomPassword(DefaultPasswordOptions);
@@ -238,11 +260,11 @@ namespace Microsoft.CampusCommunity.Services
         }
 
         // TODO: Refine: Use Flow or something where everyone can change this
-        private async Task SendNewUserWelcomeMail(User user, NewUser newUser, User campusLead)
+        private async Task SendNewUserWelcomeMail(User user, NewUser newUser, User campusLead, SecureString userPassword)
         {
             var body =
-                $"Hello {user.DisplayName},\nWelcome to the Microsoft Campus Community! We are very happy to have you as your newest member. Your new user with the address {user.Mail} is almost ready. We are just finishing a few things here. You can already try and login with the following credentials:\n\nUsername: {user.Mail}\nPassword: {user.PasswordProfile.Password}\n\nPlease change the password after you login for the first time. If there are any problems don't hesitate to contact us.\nLet's all have a great time working together.";
-            await SendMail($"Welcome to the Microsoft Campus Community", body, campusLead.Id, newUser.SecondaryMail);
+                $"Hello {user.DisplayName},\nWelcome to the Microsoft Campus Community! We are very happy to have you as your newest member. Your new user with the address {newUser.Email} is almost ready. We are just finishing a few things here and there. You can already try and login with the following credentials:\n\nUsername: {newUser.Email}\nPassword: {userPassword.ToUnsecureString()}\n\nPlease change the password after you login for the first time. If there are any problems don't hesitate to contact us.\nLet's all have a great time working together.\n\nBest regards\n{campusLead.DisplayName}\n\nPlease not that this mail was generated automatically.";
+            await SendMail($"Welcome to the Microsoft Campus Community", body, campusLead, newUser.SecondaryMail);
         }
     }
 }

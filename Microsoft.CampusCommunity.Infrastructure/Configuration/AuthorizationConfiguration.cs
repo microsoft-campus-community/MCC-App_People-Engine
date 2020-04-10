@@ -22,5 +22,30 @@ namespace Microsoft.CampusCommunity.Infrastructure.Configuration
         public Guid GermanLeadsGroupId { get; set; }
         public Guid HubLeadsGroupId { get; set; }
         public Guid InternalDevelopmentGroupId { get; set; }
+
+        public Guid[] CampusLeadsAccessGroup
+        {
+            get
+            {
+                return new Guid[]
+                {
+                    GermanLeadsGroupId,
+                    HubLeadsGroupId,
+                    InternalDevelopmentGroupId
+                };
+            }
+        }
+
+        public Guid[] HubLeadsAccessGroup
+        {
+            get
+            {
+                return new Guid[]
+                {
+                    GermanLeadsGroupId,
+                    InternalDevelopmentGroupId
+                };
+            }
+        }
     }
 }

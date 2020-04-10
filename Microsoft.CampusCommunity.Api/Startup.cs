@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -49,9 +50,9 @@ namespace Microsoft.CampusCommunity.Api
         /// <param name="env"></param>
         /// <param name="authenticationOptions"></param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
-            IOptions<AadAuthenticationConfiguration> authenticationOptions)
+            IOptions<AadAuthenticationConfiguration> authenticationOptions, IConfiguration configuration)
         {
-            if (env.IsDevelopment()) app.UseDeveloperExceptionPage();
+            if (env.IsDevelopment() || env.EnvironmentName.StartsWith("Development")) app.UseDeveloperExceptionPage();
 
             app.UseHttpsRedirection();
             app.UseSwagger();
@@ -60,12 +61,14 @@ namespace Microsoft.CampusCommunity.Api
                 o.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
                 o.OAuthClientId(authenticationOptions.Value.ClientId);
                 o.DisplayRequestDuration();
+                o.InjectStylesheet($"/css/{configuration.GetSection("SwaggerConfiguration")["CssFile"]}");
             });
 
             app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseStaticFiles();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 

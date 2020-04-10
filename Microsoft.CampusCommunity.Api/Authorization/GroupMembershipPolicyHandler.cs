@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.CampusCommunity.Infrastructure.Helpers;
@@ -45,6 +46,10 @@ namespace Microsoft.CampusCommunity.Api.Authorization
             {
                 var mccGroups = await _graphService.UserMemberOf(AuthenticationHelper.GetUserIdFromToken(context.User));
                 groups = mccGroups.Select(g => g.Id).ToList();
+
+                // add those groups to the user claims so that other group auth tests can be performed
+                var claims = mccGroups.Select(g => new Claim("groups", g.Id.ToString()));
+                context.User.AddIdentity(new ClaimsIdentity(claims));
             }
 
             // does the user have at least one of the necessary group memberships?
