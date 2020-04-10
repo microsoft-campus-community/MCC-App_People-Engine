@@ -26,7 +26,7 @@ namespace Microsoft.CampusCommunity.DataAccess.Repositories
 
         public async Task<TEntity> GetById(Guid id)
         {
-            return await DbSet.FindAsync(id);
+            return await GetIncludes().FirstOrDefaultAsync(e => e.Id == id);
         }
 
         public async Task Delete(TEntity entity)

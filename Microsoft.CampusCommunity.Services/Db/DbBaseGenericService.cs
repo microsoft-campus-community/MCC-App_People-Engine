@@ -26,9 +26,12 @@ namespace Microsoft.CampusCommunity.Services.Db
         }
 
         /// <inheritdoc />
-        public Task<TEntity> GetById(Guid id)
+        public async Task<TEntity> GetById(Guid id)
         {
-            return Repository.GetById(id);
+            var e = await Repository.GetById(id);
+            if (e == null)
+                throw new MccNotFoundException($"{typeof(TEntity)} with Id {id} was not found.");
+            return e;
         }
 
         /// <inheritdoc />

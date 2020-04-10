@@ -15,9 +15,13 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Dto
 
         public static Hub FromDb(Db.Hub h)
         {
-            var campus = h.Campus.Select(Dto.Campus.FromDb);
+            IEnumerable<Campus> campus = new List<Campus>();
+            if (h.Campus != null)
+                campus = h.Campus.Select(Dto.Campus.FromDb);
+            
             return new Hub(h.ModifiedBy)
             {
+                Id = h.Id,
                 Name = h.Name,
                 Lead = h.Lead,
                 LeadName = "?",
