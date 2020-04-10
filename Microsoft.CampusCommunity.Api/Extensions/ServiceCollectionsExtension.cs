@@ -157,17 +157,18 @@ namespace Microsoft.CampusCommunity.Api.Extensions
 			if (string.IsNullOrWhiteSpace(dbType))
 				dbType = "sql"; // set default
 
-			if (dbType != "sql" && dbType != "sqlite")
-				throw new MccBadConfigurationException($"DatabaseType is not a valid configuration value. sql or sqlite is supported. Value is {dbType}");
-
-			if (dbType == "sql") {
-				services.AddDbContext<MccContext>(options => { options.UseSqlServer(connectionString); });
-			}
-			else if (dbType == "sqlite") 
-			{
-				services.AddDbContext<MccContext>(options => { options.UseSqlite(connectionString); });
-
-			}
+			switch (dbType)
+            {
+                case "sql":
+                    services.AddDbContext<MccContext>(options => { options.UseSqlServer(connectionString); });
+                    break;
+                case "sqlite":
+                    services.AddDbContext<MccContext>(options => { options.UseSqlite(connectionString); });
+                    break;
+                default:
+                    throw new MccBadConfigurationException(
+                        $"DatabaseType is not a valid configuration value. sql or sqlite is supported. Value is {dbType}");
+            }
             return services;
         }
 
