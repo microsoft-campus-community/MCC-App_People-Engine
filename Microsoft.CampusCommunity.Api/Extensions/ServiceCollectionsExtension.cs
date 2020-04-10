@@ -149,7 +149,25 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             var connectionString = configuration.GetConnectionString("default");
             if (string.IsNullOrWhiteSpace(connectionString))
                 throw new MccBadConfigurationException($"connectionString is not set");
-            services.AddDbContext<MccContext>(options => { options.UseSqlServer(connectionString); });
+
+			// check database setting. For windows and production instances this should be sql ()
+			// for machines where localDb is not supported this should be changed to sqlite so that the 
+			// sqlite server is used (only for development)
+			var dbType = configuration.GetValue<string>("DatabaseType");
+			if (string.IsNullOrWhiteSpace(dbType))
+				dbType = "sql"; // set default
+
+			if (dbType != "sql" && dbType != "sqlite")
+				throw new MccBadConfigurationException($"DatabaseType is not a valid configuration value. sql or sqlite is supported. Value is {dbType}");
+
+			if (dbType == "sql") {
+				services.AddDbContext<MccContext>(options => { options.UseSqlServer(connectionString); });
+			}
+			else if (dbType == "sqlite") 
+			{
+				services.AddDbContext<MccContext>(options => { options.UseSqlite(connectionString); });
+
+			}
             return services;
         }
 

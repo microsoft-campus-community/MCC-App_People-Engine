@@ -24,10 +24,29 @@ The People API uses a database to keep track of hubs and campus. While you can r
 
 1. If you have not already done this, install the **ef** core tools. For .Net Core 2.x this was included in the SDK but for .Net Core 3.x this is a separate download. To download the tools simply run 
 ```dotnet tool install --global dotnet-ef```.
-2. Before continuing, make sure you can build the solution. 
-3. Go to the API project located under `projectRoot/Microsoft.CampusCommunity.Api`. 
-4. To update / create your database locally run `dotnet ef database update`.
+2. Before continuing, make sure you can build the solution.
+3. Go to the API project located under `projectRoot/Microsoft.CampusCommunity.Api`.
+4. To update / create your database locally run `dotnet ef database update`. **For macOS or other linux based operating systems this command will not work. Please refer to the next section to create a database.**
 5. Use your favorite local DB tool to verify the creation of the database locally. On Windows I use either the free [SQL Server Management Studio](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms?view=sql-server-ver15) or the SQL Server object explorer which is included in Visual Studio. There is also a [free extension](https://marketplace.visualstudio.com/items?itemName=ms-mssql.mssql) for VS Code.
+
+
+#### For Unix based Operating Systems
+
+The default connection string will not work on machines that do not run Windows since LocalDB is not supported. Follow this guide to install an alternative
+
+1. Download and install [SQLite](https://www.sqlite.org/index.html)
+2. Go to your `appsettings.Development.json` and change the connection string and database type:
+
+```json
+{
+	"ConnectionStrings": {
+	"Default": "Data Source=Mcc.PeopleApi.db"
+	},
+	"DatabaseType": "sqlite",
+	...
+}
+
+```
 
 
 ### Development
