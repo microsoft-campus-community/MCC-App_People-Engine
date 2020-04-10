@@ -351,3 +351,6 @@ MigrationBackup/
 
 # exclude api.xml
 api.xml
+
+# exclude sqlite db files
+*.db
