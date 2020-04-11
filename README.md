@@ -34,7 +34,7 @@ The People API uses a database to keep track of hubs and campus. While you can r
 
 The default connection string will not work on machines that do not run Windows since LocalDB is not supported. Follow this guide to install an alternative
 
-1. Download and install [SQLite](https://www.sqlite.org/index.html)
+1. Download and install [SQLite](https://www.sqlite.org/index.html) if it is not already part of your system. For example, macOS uses SQLite for most native applications so it's already part of the system. However, you can use a [VS Code Extension](https://sqlitebrowser.org) or an application like [Db Browser for SQLLite](https://sqlitebrowser.org) to monitor your local SQLite database(s).
 2. Go to your `appsettings.Development.json` and change the connection string and database type:
 
 ```json
@@ -45,8 +45,9 @@ The default connection string will not work on machines that do not run Windows 
 	"DatabaseType": "sqlite",
 	...
 }
-
 ```
+
+3. Run `dotnet ef database update` in your `projectRoot/Microsoft.CampusCommunity.Api` folder.
 
 
 ### Development
