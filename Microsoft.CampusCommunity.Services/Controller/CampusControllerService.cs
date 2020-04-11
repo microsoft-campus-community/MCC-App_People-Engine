@@ -18,9 +18,17 @@ namespace Microsoft.CampusCommunity.Services.Controller
         private readonly IGraphUserService _graphUserService;
         private readonly IDbService<Infrastructure.Entities.Db.Campus> _campusDbService;
         private readonly IDbService<Hub> _hubDbService;
-        private readonly IHubControllerService _hubControllerService;
         private readonly AuthorizationConfiguration _authorizationConfiguration;
         private readonly IGraphGroupService _graphGroupService;
+
+        public CampusControllerService(IGraphUserService graphUserService, IDbService<Infrastructure.Entities.Db.Campus> campusDbService, IDbService<Hub> hubDbService, AuthorizationConfiguration authorizationConfiguration, IGraphGroupService graphGroupService)
+        {
+            _graphUserService = graphUserService;
+            _campusDbService = campusDbService;
+            _hubDbService = hubDbService;
+            _authorizationConfiguration = authorizationConfiguration;
+            _graphGroupService = graphGroupService;
+        }
 
 
         #region Implementation of ICampusControllerService

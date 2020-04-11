@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.CampusCommunity.DataAccess;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Db;
+using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.CampusCommunity.Api.Helpers
@@ -23,7 +26,7 @@ namespace Microsoft.CampusCommunity.Api.Helpers
         /// <param name="builder"></param>
         /// <param name="migrate"></param>
         /// <param name="seedDevData"></param>
-        public static void Seed(IApplicationBuilder builder, bool migrate=true, bool seedDevData=true)
+        public static void Seed(IApplicationBuilder builder, bool migrate=true, bool seedDevData=true, bool seedProdData=false)
         {
             
 
@@ -36,31 +39,74 @@ namespace Microsoft.CampusCommunity.Api.Helpers
 
             if (seedDevData)
                 SeedDevData(context);
+
+            if (seedProdData)
+            {
+                var graphService = scope.ServiceProvider.GetRequiredService<IGraphGroupService>();
+                SeedProdData(context, graphService);
+            }
+        }
+
+        private static void SeedProdData(MccContext context, IGraphGroupService graphService)
+        {
+            var defaultRemoteHubId = Guid.Parse("00a7df8e-a810-4aa1-9791-6e0a79a911d3");
+
+            // get all campus
+            var allGroups = graphService.GetAllGroups().Result.ToList();
+
+            // divide between hubs and campus
+            var campusList = allGroups.Where(g => g.Name.StartsWith("Campus "));
+            var hubs = allGroups.Where(g => g.Name.StartsWith("Hub "));
+
+            var dbHubs = hubs.Select(hub => new Hub()
+                {
+                    AadGroupId = hub.Id,
+                    Campus = new List<Campus>(),
+                    CreatedAt = DateTime.UtcNow,
+                    Lead = Guid.Empty,
+                    ModifiedAt = DateTime.UtcNow,
+                    Name = hub.Name
+                })
+                .ToList();
+
+            foreach (var campus in campusList)
+            {
+                // check if campus exists, otherwise add it
+                if (context.Campus.Any(c => c.AadGroupId == campus.Id))
+                    continue;
+
+                // find hub for campus
+                if (!Guid.TryParse(campus.Description, out var hubId))
+                {
+                    // description could not be parsed as a guid -> take the default hub Id
+                    hubId = defaultRemoteHubId;
+                }
+
+                var hub = dbHubs.FirstOrDefault(h => h.AadGroupId == hubId);
+                var newCampus = new Campus(campus.Name, Guid.Empty, campus.Id, campus.Name.Replace("Campus ", ""),
+                    Guid.Empty)
+                {
+                    Hub = hub
+                };
+
+                context.Campus.Add(newCampus);
+
+                // add campus to hub
+                hub?.Campus.ToList().Add(newCampus);
+            }
+
+            context.Hubs.AddRange(dbHubs);
+            context.SaveChanges();
         }
 
         private static void SeedDevData(MccContext context)
-        {
-            var testHubs = new Hub[]
-            {
-                new Hub()
-                {
-                    Id = TestHubId,
-                    AadGroupId = Guid.Parse("5460cdd4-a626-4cda-aa0b-f013e6eefea2"),
-                    CreatedAt = DateTime.UtcNow,
-                    Name = "Hub Global University",
-                    Campus = new List<Campus>(),
-                    Lead = TestHubLeadId,
-                    ModifiedAt = DateTime.UtcNow,
-                    ModifiedBy = Guid.NewGuid()
-                },
-            };
-
+        {   
             var testCampus = new Campus[]
             {
                 new Campus()
                 {
                     Id = TestCampusId,
-                    Hub = testHubs[0],
+                    Hub = null,
                     Lead = TestCampusLeadId,
                     UniversityName = "Microsoft Global University",
                     Name = "Campus Microsoft University",
@@ -70,7 +116,24 @@ namespace Microsoft.CampusCommunity.Api.Helpers
                     AadGroupId = Guid.Parse("bd8226ca-2e6c-4aa6-adcb-85ce8c871b1d")
                 },
             };
-            testHubs[0].Campus.Append(testCampus[0]);
+            var testHubs = new Hub[]
+            {
+                new Hub()
+                {
+                    Id = TestHubId,
+                    AadGroupId = Guid.Parse("5460cdd4-a626-4cda-aa0b-f013e6eefea2"),
+                    CreatedAt = DateTime.UtcNow,
+                    Name = "Hub Global University",
+                    Campus = new List<Campus>()
+                    {
+                        testCampus[0]
+                    },
+                    Lead = TestHubLeadId,
+                    ModifiedAt = DateTime.UtcNow,
+                    ModifiedBy = Guid.NewGuid()
+                },
+            };
+            testCampus[0].Hub = testHubs[0];
 
             // check if all data is in database
             foreach (var h in testHubs)
