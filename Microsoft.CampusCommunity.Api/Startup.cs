@@ -78,7 +78,7 @@ namespace Microsoft.CampusCommunity.Api
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
-            DatabaseSeeder.Seed(app, migrate: true, seedDevData: isDevEnv);
+            DatabaseSeeder.Seed(app, migrate: true, seedDevData: isDevEnv, !isDevEnv);
 
 
             //app.UseCors(policy => policy

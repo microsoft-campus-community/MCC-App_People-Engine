@@ -88,7 +88,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         [Authorize(Policy = PolicyNames.Community)]
         public Task<Campus> GetById(Guid hubId, Guid campusId)
         {
-            User.ConfirmGroupMembership(campusId, _authConfig.HubLeadsGroupId);
+            User.ConfirmGroupMembership(campusId, _authConfig.HubLeadsAccessGroup);
             return _service.GetById(campusId, User);
         }
 
@@ -109,7 +109,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
             [FromQuery(Name = "scope")] UserScope scope = UserScope.Basic
         )
         {
-            User.ConfirmGroupMembership(campusId, _authConfig.HubLeadsGroupId);
+            User.ConfirmGroupMembership(campusId, _authConfig.HubLeadsAccessGroup);
             return _service.GetUsers(campusId, User, scope);
         }
 

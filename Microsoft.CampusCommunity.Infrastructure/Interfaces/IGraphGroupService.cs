@@ -15,5 +15,6 @@ namespace Microsoft.CampusCommunity.Infrastructure.Interfaces
         Task<IEnumerable<MccGraphGroup>> UserMemberOf(Guid userId);
         Task<MccGraphGroup> CreateGroup(string name, Guid owner);
         Task ChangeGroupOwner(Guid groupId, Guid newOwner);
+        Task<IEnumerable<MccGraphGroup>> GetAllGroups();
     }
 }
