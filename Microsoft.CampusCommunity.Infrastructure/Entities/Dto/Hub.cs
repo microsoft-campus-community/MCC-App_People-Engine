@@ -36,5 +36,9 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Dto
         public Hub(Guid? modifiedBy) : base(modifiedBy)
         {
         }
+
+        public Hub()
+        {
+        }
     }
 }

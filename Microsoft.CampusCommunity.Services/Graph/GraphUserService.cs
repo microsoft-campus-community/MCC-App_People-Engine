@@ -59,10 +59,15 @@ namespace Microsoft.CampusCommunity.Services.Graph
             return GraphHelper.MapBasicUsers(filteredUsers);
         }
 
-        public async Task<BasicUser> GetCurrentUser(Guid userId)
+        public async Task<BasicUser> GetBasicUserById(Guid userId)
         {
-            var user = await _graphService.Client.Users[userId.ToString()].Request().GetAsync();
+            var user = await GetGraphUserById(userId);
             return BasicUser.FromGraphUser(user);
+        }
+
+        public Task<User> GetGraphUserById(Guid userId)
+        {
+            return _graphService.Client.Users[userId.ToString()].Request().GetAsync();
         }
 
         public async Task<User> GetLeadForCampus(Guid campusId)
@@ -144,13 +149,19 @@ namespace Microsoft.CampusCommunity.Services.Graph
                 throw new MccBadRequestException(
                     $"Unable to assign campus lead because there is already an existing lead defined ({existingLead.Mail})");
 
-            // make sure the user has the correc job title and campus assigned
-            user.JobTitle = UserJobTitleCampusLead;
-            user.Department = campus.Id.ToString();
-            user.CompanyName = campus.Name;
+            // make sure the user has the correct job title and campus assigned
+            var userUpdate = new User()
+            {
+                Id = userId.ToString(),
+                JobTitle = UserJobTitleCampusLead,
+                Department = campus.Id.ToString(),
+                CompanyName = campus.Name
+            };
+            await _graphService.Client.Users[user.Id].Request().UpdateAsync(userUpdate);
 
             // add the campus lead to the campusLeads group
             await _graphGroupService.AddUserToGroup(user, _authorizationConfiguration.CampusLeadsGroupId);
+
 
             // change the manager of all members of the group to the new campus lead
             var campusMembers = await _graphGroupService.GetGroupMembers(campusId);
@@ -182,7 +193,12 @@ namespace Microsoft.CampusCommunity.Services.Graph
             var hub = await _graphGroupService.GetGroupById(hubId);
             
             // make sure the user has the correct job title
-            user.JobTitle = UserJobTitleHubLead;
+            var userUpdate = new User()
+            {
+                Id = newLead.ToString(),
+                JobTitle = UserJobTitleHubLead
+            };
+            await _graphService.Client.Users[user.Id].Request().UpdateAsync(userUpdate);
 
             // add the campus lead to the campusLeads group
             await _graphGroupService.AddUserToGroup(user, _authorizationConfiguration.HubLeadsGroupId);

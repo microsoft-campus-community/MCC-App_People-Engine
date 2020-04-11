@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
+using Microsoft.CampusCommunity.Infrastructure.Exceptions;
+using Microsoft.CampusCommunity.Infrastructure.Extensions;
 using Microsoft.CampusCommunity.Infrastructure.Helpers;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Microsoft.Graph;
@@ -55,8 +57,7 @@ namespace Microsoft.CampusCommunity.Services.Graph
         public async Task<IEnumerable<MccGraphGroup>> GetAllGroups()
         {
             var dirObjects = await _graphService.Client.Groups.Request().GetAsync();
-            return dirObjects.Select(dirObject => new MccGraphGroup()
-                {Id = Guid.Parse(dirObject.Id), Name = dirObject.DisplayName}).ToList();
+            return dirObjects.Select(MccGraphGroup.FromGraph).ToList();
         }
 
         public Task<IEnumerable<MccGraphGroup>> UserMemberOf(Guid userId)
@@ -65,16 +66,36 @@ namespace Microsoft.CampusCommunity.Services.Graph
         }
 
         /// <inheritdoc />
-        public async Task<MccGraphGroup> CreateGroup(string name, Guid owner)
+        public async Task<MccGraphGroup> CreateGroup(string name, Guid owner, string description)
         {
+            // make sure there are no umlaute 
+            var mailNickname = name.Replace(' ', '.').RemoveDiacritics();
             var newGroup = new Group()
             {
                 DisplayName = name,
                 MailEnabled = true,
-                MailNickname = name.Replace(' ', '.') + "@campus-community.org",
-                SecurityEnabled = true
+                GroupTypes = new[] {"Unified"},
+                MailNickname = mailNickname,
+                SecurityEnabled = true,
+                Description = description
             };
             newGroup = await _graphService.Client.Groups.Request().AddAsync(newGroup);
+
+            // add owner
+            var ownerUserObject = await _graphService.Client.Users[owner.ToString()].Request().GetAsync();
+            try
+            {
+                await _graphService.Client.Groups[newGroup.Id].Owners.References.Request().AddAsync(ownerUserObject);
+            }
+            catch (Exception e)
+            {
+                var exWrapper =
+                    new MccGraphException(
+                        $"Could not add owner to group {newGroup.DisplayName} and id {newGroup.Id}. Owner: {owner}", e);
+                _appInsightsService.TrackException(null, exWrapper, Guid.NewGuid());
+                Console.WriteLine("Could not add owner to group.");
+            }
+
             return MccGraphGroup.FromGraph(newGroup);
         }
 

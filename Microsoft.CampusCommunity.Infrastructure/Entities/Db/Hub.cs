@@ -9,7 +9,7 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Db
         public string Name { get; set; }
         public Guid Lead { get; set; }
         public Guid AadGroupId { get; set; }
-        public IEnumerable<Campus> Campus { get; set; }
+        public List<Campus> Campus { get; set; }
 
         /// <inheritdoc />
         public Hub(string name, Guid lead, Guid aadGroupId, Guid modifiedBy) : base(modifiedBy)

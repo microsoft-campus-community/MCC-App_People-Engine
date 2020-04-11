@@ -86,9 +86,28 @@ namespace Microsoft.CampusCommunity.Services.Controller
         public async Task<Campus> CreateCampus(ClaimsPrincipal user, Guid hubId, Campus campus, bool modelState)
         {
             var userId = AuthenticationHelper.GetUserIdFromToken(user);
-            var campusGroup = await _graphGroupService.CreateGroup(campus.Name, campus.Lead);
+
+            // find hub
+            var hub = await _hubDbService.GetById(hubId);
+            
+            // find lead
+            var lead = await _graphUserService.GetGraphUserById(campus.Lead);
+
+            var campusGroup = await _graphGroupService.CreateGroup(campus.Name, userId, hub.AadGroupId.ToString());
+
+            // add lead to group
+            await _graphGroupService.AddUserToGroup(lead, campusGroup.Id);
+
+            // make sure lead has permissions and title
+            await _graphUserService.DefineCampusLead(campus.Lead, campusGroup.Id);
+
+            // assign manager
+            await _graphUserService.AssignManager(lead, hub.Lead.ToString());
+
+
             var newCampus = new Infrastructure.Entities.Db.Campus(campus.Name, campus.Lead, campusGroup.Id,
-                campus.University, userId);
+                campus.University, userId) {Hub = hub};
+
             return Campus.FromDb(await _campusDbService.Create(newCampus, modelState));
         }
 
@@ -122,6 +141,10 @@ namespace Microsoft.CampusCommunity.Services.Controller
         /// <param name="user"></param>
         private void AuthorizeHubLeadForCampus(Infrastructure.Entities.Db.Campus campus, ClaimsPrincipal user)
         {
+            // skip if development or German lead
+            if(user.HasGroupId(_authorizationConfiguration.GermanLeadsGroupId) || user.HasGroupId(_authorizationConfiguration.InternalDevelopmentGroupId))
+                return;
+
             // for all other users this check is already performed
             if (user.IsHubLead(_authorizationConfiguration))
             {
@@ -129,7 +152,7 @@ namespace Microsoft.CampusCommunity.Services.Controller
                 var hub = campus.Hub;
                 if (!user.HasGroupId(hub.AadGroupId))
                 {
-                    throw new MccNotAuthorizedException($"user {AuthenticationHelper.GetUserIdFromToken(user)} is not authorized to access campus with id {campus.Id}. He is only authorized to access campus within hub {hub.Name}.");
+                    throw new MccNotAuthorizedException($"user {AuthenticationHelper.GetUserIdFromToken(user)} is not authorized to access campus with id {campus.Id}.");
                 }
             }
         }

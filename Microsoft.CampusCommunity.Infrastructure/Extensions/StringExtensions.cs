@@ -2,8 +2,10 @@
 // Licensed under the MIT license.
 
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Text;
 
 namespace Microsoft.CampusCommunity.Infrastructure.Extensions
 {
@@ -77,6 +79,20 @@ namespace Microsoft.CampusCommunity.Infrastructure.Extensions
         public static bool IsValueEqualsTo(this string fieldValue, string expected)
         {
             return fieldValue == expected || fieldValue.IsEmptyValue() && expected.IsEmptyValue();
+        }
+
+        public static string RemoveDiacritics(this string s)
+        {
+            var normalizedString = s.Normalize(NormalizationForm.FormD);
+            var stringBuilder = new StringBuilder();
+
+            foreach (var c in normalizedString)
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                    stringBuilder.Append(c);
+            }
+
+            return stringBuilder.ToString();
         }
     }
 }
