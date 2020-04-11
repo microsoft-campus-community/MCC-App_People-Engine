@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -53,19 +52,18 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         /// <param name="scope"></param>
         /// <returns></returns>
         [HttpGet]
-        [Authorize(Policy = PolicyNames.General)]
+        [Authorize(Policy = PolicyNames.Community)]
         [Route("current")]
         public Task<BasicUser> GetCurrentUser(
             [FromQuery(Name = "scope")] UserScope scope = UserScope.Basic
         )
         {
-            return _graphService.GetCurrentUser(AuthenticationHelper.GetUserIdFromToken(User));
+            return _graphService.GetBasicUserById(AuthenticationHelper.GetUserIdFromToken(User));
         }
 
         /// <summary>
         /// Create a new user
         /// </summary>
-        /// <param name="campusId">Campus Id of the new user to be created under</param>
         /// <param name="user"></param>
         /// <returns></returns>
         /// <exception cref="MccBadRequestException"></exception>

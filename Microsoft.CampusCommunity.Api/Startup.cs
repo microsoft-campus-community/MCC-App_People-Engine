@@ -1,8 +1,8 @@
-using System.Reflection;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.CampusCommunity.Api.Extensions;
+using Microsoft.CampusCommunity.Api.Helpers;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,7 +52,12 @@ namespace Microsoft.CampusCommunity.Api
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
             IOptions<AadAuthenticationConfiguration> authenticationOptions, IConfiguration configuration)
         {
-            if (env.IsDevelopment() || env.EnvironmentName.StartsWith("Development")) app.UseDeveloperExceptionPage();
+            bool isDevEnv = env.IsDevelopment() || env.EnvironmentName.StartsWith("Development");
+
+            if (isDevEnv)
+            {
+                app.UseDeveloperExceptionPage();
+            }
 
             app.UseHttpsRedirection();
             app.UseSwagger();
@@ -71,6 +76,9 @@ namespace Microsoft.CampusCommunity.Api
             app.UseStaticFiles();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+
+            DatabaseSeeder.Seed(app, migrate: true, seedDevData: false, isDevEnv);
+
 
             //app.UseCors(policy => policy
             //    .AllowAnyOrigin()
