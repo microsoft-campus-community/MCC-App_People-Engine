@@ -26,6 +26,7 @@ namespace Microsoft.CampusCommunity.Api.Helpers
         /// <param name="builder"></param>
         /// <param name="migrate"></param>
         /// <param name="seedDevData"></param>
+        /// <param name="seedProdData"></param>
         public static void Seed(IApplicationBuilder builder, bool migrate=true, bool seedDevData=true, bool seedProdData=false)
         {
             

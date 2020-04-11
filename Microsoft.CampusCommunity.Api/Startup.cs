@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -78,7 +77,7 @@ namespace Microsoft.CampusCommunity.Api
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
-            DatabaseSeeder.Seed(app, migrate: true, seedDevData: false, true);
+            DatabaseSeeder.Seed(app, migrate: true, seedDevData: false, isDevEnv);
 
 
             //app.UseCors(policy => policy
