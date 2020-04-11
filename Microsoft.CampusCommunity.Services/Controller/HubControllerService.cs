@@ -64,10 +64,21 @@ namespace Microsoft.CampusCommunity.Services.Controller
         /// <inheritdoc />
         public async Task<Hub> Create(Guid userId, Hub entity, bool modelState)
         {
+            // find lead
+            var lead = await _graphUserService.GetGraphUserById(entity.Lead);
+
             // create aad group
-            var hubGroup = await _graphGroupService.CreateGroup(entity.Name, userId);
+            var hubGroup = await _graphGroupService.CreateGroup(entity.Name, userId, "Hub Group");
+            
+            // add lead to group
+            await _graphGroupService.AddUserToGroup(lead, hubGroup.Id);
 
             var newHub = new Infrastructure.Entities.Db.Hub(entity.Name, entity.Lead, hubGroup.Id, userId);
+
+            // make sure lead has permissions and title
+            await _graphUserService.DefineHubLead(entity.Lead, new Guid[] { }, newHub.AadGroupId);
+
+
             return Hub.FromDb(await _hubDbService.Create(newHub, modelState));
         }
 

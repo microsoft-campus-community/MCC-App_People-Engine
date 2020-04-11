@@ -50,5 +50,9 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Dto
         public Campus(Guid? modifiedBy) : base(modifiedBy)
         {
         }
+
+        public Campus()
+        {
+        }
     }
 }

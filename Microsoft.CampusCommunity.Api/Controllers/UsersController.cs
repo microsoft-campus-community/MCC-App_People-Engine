@@ -58,7 +58,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
             [FromQuery(Name = "scope")] UserScope scope = UserScope.Basic
         )
         {
-            return _graphService.GetCurrentUser(AuthenticationHelper.GetUserIdFromToken(User));
+            return _graphService.GetBasicUserById(AuthenticationHelper.GetUserIdFromToken(User));
         }
 
         /// <summary>

@@ -88,17 +88,15 @@ namespace Microsoft.CampusCommunity.Api.Helpers
                 {
                     Hub = hub
                 };
-
+                // this will also add the campus to the corrsponding hub
                 context.Campus.Add(newCampus);
-
-                // add campus to hub
-                hub?.Campus.ToList().Add(newCampus);
             }
 
-            context.Hubs.AddRange(dbHubs);
+            var newHubs = dbHubs.Where(h => !context.Hubs.Any(hDb => hDb.AadGroupId == h.AadGroupId));
+            context.Hubs.AddRange(newHubs);
             context.SaveChanges();
         }
-
+        
         private static void SeedDevData(MccContext context)
         {   
             var testCampus = new Campus[]
