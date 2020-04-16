@@ -87,7 +87,8 @@ namespace Microsoft.CampusCommunity.Api.Helpers
                 var newCampus = new Campus(campus.Name, Guid.Empty, campus.Id, campus.Name.Replace("Campus ", ""),
                     Guid.Empty)
                 {
-                    Hub = hub
+                    Hub = hub,
+                    AadGroupId = campus.Id
                 };
                 // this will also add the campus to the corrsponding hub
                 context.Campus.Add(newCampus);
