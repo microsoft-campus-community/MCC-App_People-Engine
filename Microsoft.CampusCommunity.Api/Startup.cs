@@ -77,7 +77,8 @@ namespace Microsoft.CampusCommunity.Api
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
-            DatabaseSeeder.Seed(app, migrate: true, seedDevData: false, isDevEnv);
+            var syncDataOnStartup = configuration.GetValue<bool>("syncDataOnStartup");
+            DatabaseSeeder.Seed(app, migrate: true, seedDevData: false, syncDataOnStartup);
 
 
             //app.UseCors(policy => policy
