@@ -9,6 +9,7 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Dto
         public string Name { get; set; }
         public Guid HubId { get; set; }
         public string HubName { get; set; }
+        public Guid AadGroupId { get; set; }
 
         // TODO: Use graph extension for a nicer location name
         public string CampusLocation => Name.Replace("Campus ", "");
@@ -27,7 +28,8 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Dto
                 HubId = Guid.Empty,
                 University = "?",
                 Lead = Guid.Empty,
-                HubName = "?"
+                HubName = "?",
+                AadGroupId = g.Id
             };
         }
 
@@ -42,7 +44,8 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Dto
                 University = c.UniversityName,
                 Lead = c.Lead,
                 CreatedAt = c.CreatedAt,
-                ModifiedAt = c.ModifiedAt
+                ModifiedAt = c.ModifiedAt,
+                AadGroupId = c.AadGroupId
             };
         }
 
