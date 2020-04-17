@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CampusCommunity.Infrastructure.Entities;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
 using Microsoft.CampusCommunity.Infrastructure.Exceptions;
 using Microsoft.CampusCommunity.Infrastructure.Extensions;
@@ -58,6 +59,19 @@ namespace Microsoft.CampusCommunity.Services.Graph
         {
             var dirObjects = await _graphService.Client.Groups.Request().GetAsync();
             return dirObjects.Select(MccGraphGroup.FromGraph).ToList();
+        }
+
+        public async Task<AuthorizationGroupMembers> GetGroupMembersOfAuthorizationGroups()
+        {
+            var campusLeadsGroup = _graphService.AuthorizationConfiguration.CampusLeadsGroupId;
+            var hubLeadsGroup = _graphService.AuthorizationConfiguration.HubLeadsGroupId;
+            var germanLeadsGroup = _graphService.AuthorizationConfiguration.GermanLeadsGroupId;
+
+            var campusLeads = await GetGroupMembers(campusLeadsGroup);
+            var hubLeads = await GetGroupMembers(hubLeadsGroup);
+            var germanLeads = await GetGroupMembers(germanLeadsGroup);
+
+            return new AuthorizationGroupMembers(campusLeads, hubLeads, germanLeads);
         }
 
         public Task<IEnumerable<MccGraphGroup>> UserMemberOf(Guid userId)

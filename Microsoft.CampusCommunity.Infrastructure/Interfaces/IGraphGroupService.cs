@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.CampusCommunity.Infrastructure.Entities;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
 using Microsoft.Graph;
 
@@ -16,5 +17,6 @@ namespace Microsoft.CampusCommunity.Infrastructure.Interfaces
         Task<MccGraphGroup> CreateGroup(string name, Guid owner, string description);
         Task ChangeGroupOwner(Guid groupId, Guid newOwner);
         Task<IEnumerable<MccGraphGroup>> GetAllGroups();
+        Task<AuthorizationGroupMembers> GetGroupMembersOfAuthorizationGroups();
     }
 }

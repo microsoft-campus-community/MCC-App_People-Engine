@@ -43,7 +43,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         public Task<IEnumerable<BasicUser>> Get(
             [FromQuery(Name = "scope")] UserScope scope = UserScope.Basic)
         {
-            return _graphService.GetAllUsers();
+            return _graphService.GetAllUsers(scope);
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
             [FromQuery(Name = "scope")] UserScope scope = UserScope.Basic
         )
         {
-            return _graphService.GetBasicUserById(AuthenticationHelper.GetUserIdFromToken(User));
+            return _graphService.GetBasicUserById(AuthenticationHelper.GetUserIdFromToken(User), scope);
         }
 
         /// <summary>

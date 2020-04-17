@@ -5,7 +5,9 @@ using System.Security;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
+using Microsoft.CampusCommunity.Infrastructure.Entities;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
+using Microsoft.CampusCommunity.Infrastructure.Enums;
 using Microsoft.CampusCommunity.Infrastructure.Exceptions;
 using Microsoft.CampusCommunity.Infrastructure.Extensions;
 using Microsoft.CampusCommunity.Infrastructure.Helpers;
@@ -47,7 +49,7 @@ namespace Microsoft.CampusCommunity.Services.Graph
             _authorizationConfiguration = authorizationConfiguration;
         }
 
-        public async Task<IEnumerable<BasicUser>> GetAllUsers()
+        public async Task<IEnumerable<BasicUser>> GetAllUsers(UserScope scope)
         {
             // TODO: check in the future if office location is supported as a graph filter attribute. Try something like $filter=officeLocation+eq+'Munich'. Currently this is not supported.
 
@@ -56,13 +58,35 @@ namespace Microsoft.CampusCommunity.Services.Graph
             // only return users where location is not empty
             var filteredUsers = users.Where(u => !string.IsNullOrWhiteSpace(u.OfficeLocation));
 
+            // if the user scope is "full" we have to get group memberships for each user as well
+            if (scope == UserScope.Full)
+            {
+                return await AddFullScope(filteredUsers);
+            }
+
             return GraphHelper.MapBasicUsers(filteredUsers);
         }
 
-        public async Task<BasicUser> GetBasicUserById(Guid userId)
+        public async Task<IEnumerable<FullUser>> AddFullScope(IEnumerable<User> graphUsers)
+        {
+            var authGroups = await _graphGroupService.GetGroupMembersOfAuthorizationGroups();
+            return GraphHelper.MapFullUsers(graphUsers, authGroups);
+        }
+
+        public async Task<FullUser> AddFullScope(User graphUser)
+        {
+            var authGroups = await _graphGroupService.GetGroupMembersOfAuthorizationGroups();
+            return GraphHelper.MapFullUser(graphUser, authGroups);
+        }
+
+        public async Task<BasicUser> GetBasicUserById(Guid userId, UserScope scope)
         {
             var user = await GetGraphUserById(userId);
-            return BasicUser.FromGraphUser(user);
+
+            if (scope == UserScope.Basic)
+                return BasicUser.FromGraphUser(user);
+
+            return await AddFullScope(user);
         }
 
         public Task<User> GetGraphUserById(Guid userId)
