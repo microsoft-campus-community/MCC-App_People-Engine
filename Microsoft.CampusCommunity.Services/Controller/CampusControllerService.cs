@@ -79,7 +79,11 @@ namespace Microsoft.CampusCommunity.Services.Controller
             AuthorizeHubLeadForCampus(campus, user);
 
             var users = await _graphGroupService.GetGroupMembers(campus.AadGroupId);
-            return users.Select(BasicUser.FromGraphUser);
+
+            if (scope == UserScope.Basic)
+                return users.Select(BasicUser.FromGraphUser);
+
+            return await _graphUserService.AddFullScope(users);
         }
 
         /// <inheritdoc />

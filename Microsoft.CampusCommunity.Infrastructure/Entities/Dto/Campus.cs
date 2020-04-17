@@ -4,9 +4,7 @@ using Microsoft.CampusCommunity.Infrastructure.Entities.Db;
 namespace Microsoft.CampusCommunity.Infrastructure.Entities.Dto
 {
     public class Campus : BaseEntity
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
+    { public string Name { get; set; }
         public Guid HubId { get; set; }
         public string HubName { get; set; }
         public Guid AadGroupId { get; set; }
@@ -15,9 +13,6 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Dto
         public string CampusLocation => Name.Replace("Campus ", "");
         public string University { get; set; }
         public Guid Lead { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime ModifiedAt { get; set; }
-        public Guid? ModifiedBy { get; set; }
 
         public static Campus FromMccGroup(MccGraphGroup g)
         {

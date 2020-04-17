@@ -13,12 +13,12 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Dto
         public DateTimeOffset? HireDate { get; set; }
         public string University { get; set; } // Department
         public string DisplayName { get; set; }
-        public string Id { get; set; }
+        public Guid Id { get; set; }
         public string JobTitle { get; set; }
         public string Mail { get; set; }
         public string Location { get; set; }
 
-        public static BasicUser FromGraphUser(User user)
+        public  static BasicUser FromGraphUser(User user)
         {
             return new BasicUser()
             {
@@ -27,7 +27,7 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Dto
                 HireDate = user.HireDate,
                 University = user.Department,
                 DisplayName = user.DisplayName,
-                Id = user.Id,
+                Id = Guid.Parse(user.Id),
                 JobTitle = user.JobTitle,
                 Mail = user.Mail,
                 Location = user.OfficeLocation
