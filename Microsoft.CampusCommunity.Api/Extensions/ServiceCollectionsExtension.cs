@@ -7,10 +7,15 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.CampusCommunity.Api.Authorization;
 using Microsoft.CampusCommunity.DataAccess;
+using Microsoft.CampusCommunity.DataAccess.Repositories;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
+using Microsoft.CampusCommunity.Infrastructure.Entities.Db;
 using Microsoft.CampusCommunity.Infrastructure.Exceptions;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Microsoft.CampusCommunity.Services;
+using Microsoft.CampusCommunity.Services.Controller;
+using Microsoft.CampusCommunity.Services.Db;
+using Microsoft.CampusCommunity.Services.Graph;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -119,7 +124,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             var generalGroup = new GroupMembershipRequirement(new[]
             {
                 authConfig.InternalDevelopmentGroupId, authConfig.GermanLeadsGroupId, authConfig.HubLeadsGroupId,
-                authConfig.CampusLeadsGroupId, authConfig.AllCompanyGroupId
+                authConfig.CampusLeadsGroupId, authConfig.CommunityGroupId
             });
 
             services.AddAuthorization(options =>
@@ -130,7 +135,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
                     policy => { policy.Requirements.Add(germanLeadsPolicyGroups); });
                 options.AddPolicy(PolicyNames.HubLeads, policy => { policy.Requirements.Add(hubLeadsGroup); });
                 options.AddPolicy(PolicyNames.CampusLeads, policy => { policy.Requirements.Add(campusLeadsGroup); });
-                options.AddPolicy(PolicyNames.General, policy => { policy.Requirements.Add(generalGroup); });
+                options.AddPolicy(PolicyNames.Community, policy => { policy.Requirements.Add(generalGroup); });
             });
 
             services.AddScoped<IAuthorizationHandler, GroupMembershipPolicyHandler>();
@@ -141,8 +146,29 @@ namespace Microsoft.CampusCommunity.Api.Extensions
 
         private static IServiceCollection AddContext(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = configuration.GetConnectionString("connectionString");
-            services.AddDbContext<MccContext>(options => { options.UseSqlServer(connectionString); });
+            var connectionString = configuration.GetConnectionString("default");
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new MccBadConfigurationException($"connectionString is not set");
+
+			// check database setting. For windows and production instances this should be sql ()
+			// for machines where localDb is not supported this should be changed to sqlite so that the 
+			// sqlite server is used (only for development)
+			var dbType = configuration.GetValue<string>("DatabaseType");
+			if (string.IsNullOrWhiteSpace(dbType))
+				dbType = "sql"; // set default
+
+			switch (dbType)
+            {
+                case "sql":
+                    services.AddDbContext<MccContext>(options => { options.UseSqlServer(connectionString); });
+                    break;
+                case "sqlite":
+                    services.AddDbContext<MccContext>(options => { options.UseSqlite(connectionString); });
+                    break;
+                default:
+                    throw new MccBadConfigurationException(
+                        $"DatabaseType is not a valid configuration value. sql or sqlite is supported. Value is {dbType}");
+            }
             return services;
         }
 
@@ -197,6 +223,15 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             var graphConfigSection = configuration.GetSection(GraphAuthenticationSettingsSectionName);
             var graphConfig = graphConfigSection.Get<GraphClientConfiguration>();
             services.AddSingleton<GraphClientConfiguration>(graphConfig);
+
+            services.AddScoped<IBaseGenericRepository<Campus>, CampusRepository>();
+            services.AddScoped<IBaseGenericRepository<Hub>, HubRepository>();
+
+            services.AddScoped<IDbService<Campus>, DbCampusService>();
+            services.AddScoped<IDbService<Hub>, DbHubService>();
+
+            services.AddScoped<ICampusControllerService, CampusControllerService>();
+            services.AddScoped<IHubControllerService, HubControllerService>();
 
 
             services.AddScoped<IGraphBaseService, GraphBaseService>();

@@ -7,5 +7,6 @@ namespace Microsoft.CampusCommunity.Infrastructure.Interfaces
     {
         GraphServiceClient Client { get; }
         GraphClientConfiguration Configuration { get; }
+        AuthorizationConfiguration AuthorizationConfiguration { get; }
     }
 }

@@ -20,27 +20,23 @@ namespace Microsoft.CampusCommunity.Api.Controllers
     [Route("api/hubs")]
     public class CampusController : ControllerBase
     {
-        private readonly IGraphCampusService _graphService;
-        private readonly IGraphUserService _graphUserService;
+        private readonly ICampusControllerService _service;
         private readonly AuthorizationConfiguration _authConfig;
 
         /// <summary>
         ///     Default constructor
         /// </summary>
-        /// <param name="graphService"></param>
         /// <param name="authConfig"></param>
-        /// <param name="graphUserService"></param>
-        public CampusController(IGraphCampusService graphService, AuthorizationConfiguration authConfig,
-            IGraphUserService graphUserService)
+        /// <param name="service"></param>
+        public CampusController(AuthorizationConfiguration authConfig, ICampusControllerService service)
         {
-            _graphService = graphService;
             _authConfig = authConfig;
-            _graphUserService = graphUserService;
+            _service = service;
         }
 
         /// <summary>
         ///     Get all campus.
-        ///     Requirement: CampusLeads
+        ///     Requirement: GermanLeads
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -48,12 +44,12 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         [Authorize(Policy = PolicyNames.GermanLeads)]
         public Task<IEnumerable<Campus>> GetAll()
         {
-            return _graphService.GetAllCampus();
+            return _service.GetAll();
         }
 
         /// <summary>
         ///     Get all campus for a specific hub
-        ///     Requirement: HubLeads
+        ///     Requirement: HubLeads (Hub Lead need to be hub lead of hub)
         /// </summary>
         /// <param name="hubId"></param>
         /// <returns></returns>
@@ -65,12 +61,40 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         )
         {
             User.ConfirmGroupMembership(hubId, _authConfig.HubLeadsAccessGroup);
-            return _graphService.GetAllCampusForHub(hubId);
+            return _service.GetAllCampusForHub(hubId);
+        }
+
+        /// <summary>
+        ///     Get my campus
+        ///     Requirement: All
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("campus/my")]
+        [Authorize(Policy = PolicyNames.Community)]
+        public Task<Campus> GetMyCampus()
+        {
+            var userId = AuthenticationHelper.GetUserIdFromToken(User);
+            return _service.GetMyCampus(userId);
+        }
+
+        /// <summary>
+        ///     Get campus by id
+        ///     Requirement: Community (members and campus leads can only get their campus. Hub Leads can get their campus (plural))
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("{hubId}/campus/{campusId}")]
+        [Authorize(Policy = PolicyNames.Community)]
+        public Task<Campus> GetById(Guid hubId, Guid campusId)
+        {
+            User.ConfirmGroupMembership(campusId, _authConfig.HubLeadsAccessGroup);
+            return _service.GetById(campusId, User);
         }
 
         /// <summary>
         ///     Get all users for a campus
-        ///     Requirement: CampusLeads
+        ///     Requirement: Community (members and campus leads can only get their campus. Hub Leads can get their campus)
         /// </summary>
         /// <param name="hubId">Id of the hub of the campus</param>
         /// <param name="campusId">Id of the campus</param>
@@ -78,16 +102,15 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("{hubId}/campus/{campusId}/users")]
-        [Authorize(Policy = PolicyNames.CampusLeads)]
+        [Authorize(Policy = PolicyNames.Community)]
         public Task<IEnumerable<BasicUser>> GetUsers(
             [FromRoute] Guid hubId,
             [FromRoute] Guid campusId,
             [FromQuery(Name = "scope")] UserScope scope = UserScope.Basic
         )
         {
-            // Authorize Campus
-            User.ConfirmGroupMembership(campusId, _authConfig.CampusLeadsAccessGroup);
-            return _graphService.GetCampusUsers(campusId);
+            User.ConfirmGroupMembership(campusId, _authConfig.HubLeadsAccessGroup);
+            return _service.GetUsers(campusId, User, scope);
         }
 
         /// <summary>
@@ -105,16 +128,15 @@ namespace Microsoft.CampusCommunity.Api.Controllers
             [FromBody] Campus campus
         )
         {
-            if (!ModelState.IsValid) throw new MccBadRequestException();
-            return _graphService.CreateCampus(campus);
+            return _service.CreateCampus(User, hubId, campus, ModelState.IsValid);
         }
 
         /// <summary>
-        ///     Defines a campus lead for a hub
+        ///     Change campus lead for a hub
         /// </summary>
         /// <param name="campusId"></param>
         /// <param name="hubId"></param>
-        /// <param name="userId"></param>
+        /// <param name="newLeadId"></param>
         /// <returns></returns>
         [HttpPut]
         [Route("{hubId}/campus/{campusId}/lead")]
@@ -122,10 +144,24 @@ namespace Microsoft.CampusCommunity.Api.Controllers
         public Task DefineCampusLead(
             [FromRoute] Guid campusId,
             [FromRoute] Guid hubId,
-            [FromQuery] Guid userId
+            [FromQuery] Guid newLeadId
         )
         {
-            return _graphUserService.DefineCampusLead(userId, campusId);
+            return _service.DefineCampusLead(User, campusId, newLeadId);
+        }
+
+        /// <summary>
+        ///     Delete campus
+        ///     Requirement: GermanLeads
+        /// </summary>
+        /// <returns></returns>
+        [HttpDelete]
+        [Route("{hubId}/campus/{campusId}")]
+        [Authorize(Policy = PolicyNames.GermanLeads)]
+        public async Task<IActionResult> Delete([FromRoute] Guid hubId, Guid campusId)
+        {
+            await _service.Delete(campusId);
+            return NoContent();
         }
     }
 }

@@ -6,18 +6,20 @@ using Microsoft.Graph;
 using Microsoft.Graph.Auth;
 using Microsoft.Identity.Client;
 
-namespace Microsoft.CampusCommunity.Services
+namespace Microsoft.CampusCommunity.Services.Graph
 {
     public class GraphBaseService : IGraphBaseService
     {
         private IConfidentialClientApplication _msalClient;
         public GraphServiceClient Client { get; private set; }
         public GraphClientConfiguration Configuration { get; }
+        public AuthorizationConfiguration AuthorizationConfiguration { get; }
 
 
-        public GraphBaseService(GraphClientConfiguration configuration)
+        public GraphBaseService(GraphClientConfiguration configuration, AuthorizationConfiguration authorizationConfiguration)
         {
             Configuration = configuration;
+            AuthorizationConfiguration = authorizationConfiguration;
             BuildGraphClient();
         }
 

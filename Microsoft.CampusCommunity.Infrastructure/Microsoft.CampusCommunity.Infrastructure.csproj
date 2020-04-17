@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Entities\Db\" />
     <Folder Include="Middleware\" />
   </ItemGroup>
 
