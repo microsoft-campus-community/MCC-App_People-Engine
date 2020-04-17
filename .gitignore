@@ -354,3 +354,4 @@ api.xml
 
 # exclude sqlite db files
 *.db
+/Microsoft.CampusCommunity.Api/appsettings.DevelopmentMcc.json
