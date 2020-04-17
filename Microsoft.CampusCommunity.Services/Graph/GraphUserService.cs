@@ -22,6 +22,8 @@ namespace Microsoft.CampusCommunity.Services.Graph
         public const string UserJobTitleHubLead = "Hub Lead";
         public const string UserJobTitleMember = "Member";
 
+        private const string GraphUserSelectTerm = "Id,AccountEnabled,City,Department,DisplayName,JobTitle,Mail,OfficeLocation";
+
         // TODO: Define in config
         public readonly Guid SkuId = new Guid("314c4481-f395-4525-be8b-2ec4bb1e9d91");
 
@@ -52,8 +54,11 @@ namespace Microsoft.CampusCommunity.Services.Graph
         public async Task<IEnumerable<BasicUser>> GetAllUsers(UserScope scope)
         {
             // TODO: check in the future if office location is supported as a graph filter attribute. Try something like $filter=officeLocation+eq+'Munich'. Currently this is not supported.
-
-            var users = await _graphService.Client.Users.Request().GetAsync();
+            var queryOptions = new List<QueryOption>
+            {
+                new QueryOption("$select", GraphUserSelectTerm)
+            };
+            var users = await _graphService.Client.Users.Request(queryOptions).GetAsync();
 
             // only return users where location is not empty
             var filteredUsers = users.Where(u => !string.IsNullOrWhiteSpace(u.OfficeLocation));
@@ -98,7 +103,9 @@ namespace Microsoft.CampusCommunity.Services.Graph
         {
             var queryOptions = new List<QueryOption>
             {
-                new QueryOption("$filter", $@"jobTitle eq '{UserJobTitleCampusLead}' AND department eq '{campusId}'")
+                new QueryOption("$filter", $@"jobTitle eq '{UserJobTitleCampusLead}' AND department eq '{campusId}'"),
+                new QueryOption("$select", GraphUserSelectTerm)
+
             };
 
             var userResult = await _graphService.Client.Users.Request(queryOptions).GetAsync();
@@ -269,7 +276,8 @@ namespace Microsoft.CampusCommunity.Services.Graph
         {
             var queryOptions = new List<QueryOption>
             {
-                new QueryOption("$filter", $@"mailNickname eq '{alias}'")
+                new QueryOption("$filter", $@"mailNickname eq '{alias}'"),
+                new QueryOption("$select", GraphUserSelectTerm)
             };
 
             var userResult = await _graphService.Client.Users.Request(queryOptions).GetAsync();
@@ -280,7 +288,11 @@ namespace Microsoft.CampusCommunity.Services.Graph
 
         private async Task<User> FindById(Guid userId)
         {
-            var userResult = await _graphService.Client.Users[userId.ToString()].Request().GetAsync();
+            var queryOptions = new List<QueryOption>
+            {
+                new QueryOption("$select", GraphUserSelectTerm)
+            };
+            var userResult = await _graphService.Client.Users[userId.ToString()].Request(queryOptions).GetAsync();
             if (userResult == null)
                 throw new ApplicationException($"Unable to find a user with the id {userId}");
             return userResult;
