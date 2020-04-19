@@ -45,19 +45,8 @@ namespace Microsoft.CampusCommunity.Services.Controller
         }
 
         /// <inheritdoc />
-        public async Task<Hub> GetHubById(Guid userId, bool isCampusLead, Guid id)
+        public async Task<Hub> GetHubById(Guid id)
         {
-            // Perform additional checks if user is campus lead
-            if (isCampusLead)
-            {
-                var hub = await GetMyHub(userId);
-                if (hub.Id == id)
-                    return hub;
-
-                // campus lead requested other hub
-                throw new MccNotAuthorizedException($"User {userId} is only authorized to access hub {hub.Name}.");
-            }
-
             return Hub.FromDb(await _hubDbService.GetById(id));
         }
 
@@ -73,7 +62,11 @@ namespace Microsoft.CampusCommunity.Services.Controller
             // add lead to group
             await _graphGroupService.AddUserToGroup(lead, hubGroup.Id);
 
-            var newHub = new Infrastructure.Entities.Db.Hub(entity.Name, entity.Lead, hubGroup.Id, userId);
+            var newHub = new Infrastructure.Entities.Db.Hub(entity.Name, entity.Lead, hubGroup.Id, userId)
+            {
+                Id = hubGroup.Id,
+                AadGroupId = hubGroup.Id
+            };
 
             // make sure lead has permissions and title
             await _graphUserService.DefineHubLead(entity.Lead, new Guid[] { }, newHub.AadGroupId);

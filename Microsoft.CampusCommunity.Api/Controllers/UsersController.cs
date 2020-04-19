@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
+using Microsoft.CampusCommunity.Infrastructure.Entities;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
 using Microsoft.CampusCommunity.Infrastructure.Enums;
 using Microsoft.CampusCommunity.Infrastructure.Exceptions;
@@ -12,42 +14,50 @@ using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 namespace Microsoft.CampusCommunity.Api.Controllers
 {
     /// <summary>
-    /// Controller for user operations
+    /// Controller for newUser operations
     /// </summary>
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly IGraphUserService _graphService;
+        private readonly IUserControllerService _service;
         private readonly AuthorizationConfiguration _authConfig;
+        private readonly IMccAuthorizationService _authorizationService;
 
         /// <summary>
         /// Default constructor
         /// </summary>
-        /// <param name="graphService"></param>
+        /// <param name="userControllerService"></param>
         /// <param name="authConfig"></param>
-        public UsersController(IGraphUserService graphService, AuthorizationConfiguration authConfig)
+        /// <param name="authorizationService"></param>
+        public UsersController(IUserControllerService userControllerService, AuthorizationConfiguration authConfig, IMccAuthorizationService authorizationService)
         {
-            _graphService = graphService;
+            _service = userControllerService;
             _authConfig = authConfig;
+            _authorizationService = authorizationService;
         }
 
         /// <summary>
         /// Get all MCC users. This will only return users where the "location" tag is not empty.
+        /// Requirement: <see cref="PolicyNames.GermanLeads"/>
         /// </summary>
-        /// <param name="scope"></param>
-        /// <returns></returns>
+        /// <param name="scope">User scope</param>
+        /// <returns>A user</returns>
+        /// <response code="200">Request successful</response>
+        /// <response code="400">Product has missing/invalid values</response>
+        /// <response code="500">Internal Server Error</response>
         [HttpGet]
         [Authorize(Policy = PolicyNames.GermanLeads)]
         public Task<IEnumerable<BasicUser>> Get(
             [FromQuery(Name = "scope")] UserScope scope = UserScope.Basic)
         {
-            return _graphService.GetAllUsers(scope);
+            return _service.GetAll(scope);
         }
 
         /// <summary>
-        /// Gets the current user
+        /// Gets the current User.
+        /// Requirement: <see cref="PolicyNames.Community"/>
         /// </summary>
         /// <param name="scope"></param>
         /// <returns></returns>
@@ -58,26 +68,35 @@ namespace Microsoft.CampusCommunity.Api.Controllers
             [FromQuery(Name = "scope")] UserScope scope = UserScope.Basic
         )
         {
-            return _graphService.GetBasicUserById(AuthenticationHelper.GetUserIdFromToken(User), scope);
+            return _service.GetUserById(AuthenticationHelper.GetUserIdFromToken(User), scope);
         }
 
         /// <summary>
-        /// Create a new user
+        /// Create a new new User
+        /// Requirement: <see cref="PolicyNames.CampusLeads"/>
         /// </summary>
-        /// <param name="user"></param>
+        /// <param name="newUser"></param>
         /// <returns></returns>
         /// <exception cref="MccBadRequestException"></exception>
         [HttpPost]
         [Authorize(Policy = PolicyNames.CampusLeads)]
-        public Task<BasicUser> CreateUser(
-            [FromBody] NewUser user
+        public async Task<BasicUser> CreateUser(
+            [FromBody] NewUser newUser
         )
         {
-            var campusId = user.CampusId;
             if (!ModelState.IsValid) throw new MccBadRequestException();
+            var campusId = newUser.CampusId;
+            if (campusId == Guid.Empty) throw new MccBadRequestException("Campus Id for new newUser is not set");
 
-            User.ConfirmGroupMembership(campusId, _authConfig.CampusLeadsAccessGroup);
-            return _graphService.CreateUser(user, campusId);
+            await _authorizationService.CheckAuthorizationRequirement(User,
+                new[]
+                {
+                    new AuthorizationRequirement(AuthorizationRequirementType.IsGermanLead, Guid.Empty),
+                    new AuthorizationRequirement(AuthorizationRequirementType.IsCampusLeadForCampus, campusId),
+                    new AuthorizationRequirement(AuthorizationRequirementType.IsHubLeadForCampus, campusId),
+                });
+
+            return await _service.CreateUser(newUser, campusId);
         }
     }
 }
