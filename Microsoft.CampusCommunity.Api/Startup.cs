@@ -49,6 +49,7 @@ namespace Microsoft.CampusCommunity.Api
         /// <param name="app"></param>
         /// <param name="env"></param>
         /// <param name="authenticationOptions"></param>
+        /// <param name="configuration"></param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
             IOptions<AadAuthenticationConfiguration> authenticationOptions, IConfiguration configuration)
         {
@@ -79,13 +80,6 @@ namespace Microsoft.CampusCommunity.Api
 
             var syncDataOnStartup = configuration.GetValue<bool>("syncDataOnStartup");
             DatabaseSeeder.Seed(app, migrate: true, seedDevData: false, syncDataOnStartup);
-
-
-            //app.UseCors(policy => policy
-            //    .AllowAnyOrigin()
-            //    .AllowAnyMethod()
-            //    .AllowAnyHeader()
-            //    .AllowCredentials());
         }
     }
 }
