@@ -53,11 +53,15 @@ namespace Microsoft.CampusCommunity.Api
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
             IOptions<AadAuthenticationConfiguration> authenticationOptions, IConfiguration configuration)
         {
-            bool isDevEnv = env.IsDevelopment() || env.EnvironmentName.StartsWith("Development");
-
+            //bool isDevEnv = env.IsDevelopment() || env.EnvironmentName.StartsWith("Development");
+            var isDevEnv = false;
             if (isDevEnv)
             {
                 app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionMiddleware();
             }
 
             app.UseHttpsRedirection();

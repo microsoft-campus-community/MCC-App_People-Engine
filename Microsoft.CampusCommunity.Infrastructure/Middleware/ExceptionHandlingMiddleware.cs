@@ -7,7 +7,7 @@ using Microsoft.CampusCommunity.Infrastructure.Exceptions;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Newtonsoft.Json;
 
-namespace Microsoft.CampusCommunity.Infrastructure.Middlewares
+namespace Microsoft.CampusCommunity.Infrastructure.Middleware
 {
     public class ExceptionHandlingMiddleware : IMiddleware
     {

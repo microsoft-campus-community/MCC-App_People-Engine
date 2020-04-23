@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.CampusCommunity.Infrastructure.Middlewares;
+using Microsoft.CampusCommunity.Infrastructure.Middleware;
 
 namespace Microsoft.CampusCommunity.Api.Extensions
 {
