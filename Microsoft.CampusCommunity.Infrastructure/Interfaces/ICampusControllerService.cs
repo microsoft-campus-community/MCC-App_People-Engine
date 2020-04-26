@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
 using Microsoft.CampusCommunity.Infrastructure.Enums;
@@ -17,6 +16,11 @@ namespace Microsoft.CampusCommunity.Infrastructure.Interfaces
         /// <returns></returns>
         Task<IEnumerable<Campus>> GetAllCampusForHub(Guid hubId);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         Task<Campus> GetMyCampus(Guid userId);
 
         /// <summary>
@@ -25,28 +29,40 @@ namespace Microsoft.CampusCommunity.Infrastructure.Interfaces
         /// <param name="user">used to check if user is allowed to get campus. Member and Campus Lead level is checked. Service needs to perform Hub lead level check</param>
         /// <param name="campusId"></param>
         /// <returns></returns>
-        Task<Campus> GetById(Guid campusId, ClaimsPrincipal user);
+        Task<Campus> GetById(Guid campusId);
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="user">used to check if user is allowed to get campus</param>
         /// <param name="campusId"></param>
         /// <param name="scope"></param>
         /// <returns></returns>
-        Task<IEnumerable<BasicUser>> GetUsers(Guid campusId, ClaimsPrincipal user, UserScope scope);
-
-        Task<Campus> CreateCampus(ClaimsPrincipal user, Guid hubId, Campus campus, bool modelState);
+        Task<IEnumerable<BasicUser>> GetUsers(Guid campusId, UserScope scope);
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="user">used to check if user is allowed to get campus</param>
+        /// <param name="userId"></param>
+        /// <param name="hubId"></param>
+        /// <param name="campus"></param>
+        /// <param name="modelState"></param>
+        /// <returns></returns>
+        Task<Campus> CreateCampus(Guid userId, Guid hubId, Campus campus, bool modelState);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userId"></param>
         /// <param name="campusId"></param>
         /// <param name="newLeadId"></param>
         /// <returns></returns>
-        Task DefineCampusLead(ClaimsPrincipal user, Guid campusId, Guid newLeadId);
+        Task DefineCampusLead(Guid userId, Guid campusId, Guid newLeadId);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="campusId"></param>
+        /// <returns></returns>
         Task Delete(Guid campusId);
     }
 }

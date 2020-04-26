@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.CampusCommunity.Api.Extensions;
 using Microsoft.CampusCommunity.Api.Helpers;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
+using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -49,14 +50,20 @@ namespace Microsoft.CampusCommunity.Api
         /// <param name="app"></param>
         /// <param name="env"></param>
         /// <param name="authenticationOptions"></param>
+        /// <param name="configuration"></param>
+        /// <param name="appInsightsService"></param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
-            IOptions<AadAuthenticationConfiguration> authenticationOptions, IConfiguration configuration)
+            IOptions<AadAuthenticationConfiguration> authenticationOptions, IConfiguration configuration, IAppInsightsService appInsightsService)
         {
             bool isDevEnv = env.IsDevelopment() || env.EnvironmentName.StartsWith("Development");
-
-            if (isDevEnv)
+            bool useDevExceptionPage = configuration.GetValue<bool>("useDeveloperExceptionPage");
+            if (useDevExceptionPage)
             {
                 app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionMiddleware(appInsightsService);
             }
 
             app.UseHttpsRedirection();
@@ -79,13 +86,6 @@ namespace Microsoft.CampusCommunity.Api
 
             var syncDataOnStartup = configuration.GetValue<bool>("syncDataOnStartup");
             DatabaseSeeder.Seed(app, migrate: true, seedDevData: false, syncDataOnStartup);
-
-
-            //app.UseCors(policy => policy
-            //    .AllowAnyOrigin()
-            //    .AllowAnyMethod()
-            //    .AllowAnyHeader()
-            //    .AllowCredentials());
         }
     }
 }

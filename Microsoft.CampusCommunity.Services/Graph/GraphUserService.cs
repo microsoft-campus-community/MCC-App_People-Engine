@@ -22,6 +22,8 @@ namespace Microsoft.CampusCommunity.Services.Graph
         public const string UserJobTitleHubLead = "Hub Lead";
         public const string UserJobTitleMember = "Member";
 
+        private const string GraphUserSelectTerm = "Id,AccountEnabled,City,Department,DisplayName,JobTitle,Mail,OfficeLocation";
+
         // TODO: Define in config
         public readonly Guid SkuId = new Guid("314c4481-f395-4525-be8b-2ec4bb1e9d91");
 
@@ -52,8 +54,11 @@ namespace Microsoft.CampusCommunity.Services.Graph
         public async Task<IEnumerable<BasicUser>> GetAllUsers(UserScope scope)
         {
             // TODO: check in the future if office location is supported as a graph filter attribute. Try something like $filter=officeLocation+eq+'Munich'. Currently this is not supported.
-
-            var users = await _graphService.Client.Users.Request().GetAsync();
+            var queryOptions = new List<QueryOption>
+            {
+                new QueryOption("$select", GraphUserSelectTerm)
+            };
+            var users = await _graphService.Client.Users.Request(queryOptions).GetAsync();
 
             // only return users where location is not empty
             var filteredUsers = users.Where(u => !string.IsNullOrWhiteSpace(u.OfficeLocation));
@@ -89,16 +94,29 @@ namespace Microsoft.CampusCommunity.Services.Graph
             return await AddFullScope(user);
         }
 
-        public Task<User> GetGraphUserById(Guid userId)
+        public async Task<User> GetGraphUserById(Guid userId)
         {
-            return _graphService.Client.Users[userId.ToString()].Request().GetAsync();
+            User user;
+            try
+            {
+                user = await _graphService.Client.Users[userId.ToString()].Request().GetAsync();
+            }
+            catch (ServiceException e)
+            {
+                throw new MccNotFoundException(
+                    $"Could not find user with id {userId}. Please see inner exception for details", e);
+            }
+
+            return user;
         }
 
         public async Task<User> GetLeadForCampus(Guid campusId)
         {
             var queryOptions = new List<QueryOption>
             {
-                new QueryOption("$filter", $@"jobTitle eq '{UserJobTitleCampusLead}' AND department eq '{campusId}'")
+                new QueryOption("$filter", $@"jobTitle eq '{UserJobTitleCampusLead}' AND department eq '{campusId}'"),
+                new QueryOption("$select", GraphUserSelectTerm)
+
             };
 
             var userResult = await _graphService.Client.Users.Request(queryOptions).GetAsync();
@@ -269,7 +287,8 @@ namespace Microsoft.CampusCommunity.Services.Graph
         {
             var queryOptions = new List<QueryOption>
             {
-                new QueryOption("$filter", $@"mailNickname eq '{alias}'")
+                new QueryOption("$filter", $@"mailNickname eq '{alias}'"),
+                new QueryOption("$select", GraphUserSelectTerm)
             };
 
             var userResult = await _graphService.Client.Users.Request(queryOptions).GetAsync();
@@ -280,7 +299,11 @@ namespace Microsoft.CampusCommunity.Services.Graph
 
         private async Task<User> FindById(Guid userId)
         {
-            var userResult = await _graphService.Client.Users[userId.ToString()].Request().GetAsync();
+            var queryOptions = new List<QueryOption>
+            {
+                new QueryOption("$select", GraphUserSelectTerm)
+            };
+            var userResult = await _graphService.Client.Users[userId.ToString()].Request(queryOptions).GetAsync();
             if (userResult == null)
                 throw new ApplicationException($"Unable to find a user with the id {userId}");
             return userResult;
@@ -360,7 +383,7 @@ namespace Microsoft.CampusCommunity.Services.Graph
         private async Task SendNewUserWelcomeMail(User user, NewUser newUser, User campusLead, SecureString userPassword)
         {
             var body =
-                $"Hello {user.DisplayName},\nWelcome to the Microsoft Campus Community! We are very happy to have you as your newest member. Your new user with the address {newUser.Email} is almost ready. We are just finishing a few things here and there. You can already try and login with the following credentials:\n\nUsername: {newUser.Email}\nPassword: {userPassword.ToUnsecureString()}\n\nPlease change the password after you login for the first time. If there are any problems don't hesitate to contact us.\nLet's all have a great time working together.\n\nBest regards\n{campusLead.DisplayName}\n\nPlease not that this mail was generated automatically.";
+                $"Hello {user.DisplayName},\nWelcome to the Microsoft Campus Community! We are very happy to have you as your newest member. Your new user with the address {newUser.Email} is almost ready. We are just finishing a few things here and there. You can already try and login with the following credentials:\n\nUsername: {newUser.Email}\nPassword: {userPassword.ToUnsecureString()}\n\nPlease change the password after you login for the first time. If there are any problems don't hesitate to contact us.\nLet's all have a great time working together.\n\nBest regards\n{campusLead.DisplayName}\n\nPlease note that this mail was generated automatically.";
             await SendMail($"Welcome to the Microsoft Campus Community", body, campusLead, newUser.SecondaryMail);
         }
     }

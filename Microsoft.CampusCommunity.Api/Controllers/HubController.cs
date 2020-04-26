@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
+using Microsoft.CampusCommunity.Infrastructure.Entities;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
 using Microsoft.CampusCommunity.Infrastructure.Helpers;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
-using Microsoft.Graph;
 
 namespace Microsoft.CampusCommunity.Api.Controllers
 {
@@ -19,19 +19,24 @@ namespace Microsoft.CampusCommunity.Api.Controllers
     [Route("api/hubs")]
     public class HubController : ControllerBase
     {
-        private readonly AuthorizationConfiguration _authConfig;
+        private readonly IMccAuthorizationService _authorizationService;
         private readonly IHubControllerService _service;
 
-        public HubController(IHubControllerService service, AuthorizationConfiguration authConfig)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="authorizationService"></param>
+        public HubController(IHubControllerService service, IMccAuthorizationService authorizationService)
         {
             _service = service;
-            _authConfig = authConfig;
+            _authorizationService = authorizationService;
         }
 
 
         /// <summary>
         ///     Get all hubs.
-        ///     Requirement: HubLeads
+        ///     Requirement: <see cref="PolicyNames.HubLeads"/>
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -43,7 +48,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
 
         /// <summary>
         ///     Get my hub
-        ///     Requirement: CampusLeads
+        ///     Requirement: <see cref="PolicyNames.CampusLeads"/>
         /// </summary>
         /// <returns></returns>
         [HttpGet]
@@ -57,21 +62,27 @@ namespace Microsoft.CampusCommunity.Api.Controllers
 
         /// <summary>
         ///     Get hub by id
-        ///     Requirement: CampusLeads - Campus Leads can get their own hub - hub leads can get any hub
+        ///     Requirement: <see cref="PolicyNames.CampusLeads"/> - Campus Leads can get their own hub - hub leads can get any hub
         /// </summary>
         /// <returns></returns>
         [HttpGet]
         [Route("{hubId}")]
         [Authorize(Policy = PolicyNames.CampusLeads)]
-        public Task<Hub> GetHubById(Guid hubId)
+        public async Task<Hub> GetHubById(Guid hubId)
         {
-            var userId = AuthenticationHelper.GetUserIdFromToken(User);
-            return _service.GetHubById(userId, User.IsCampusLead(_authConfig), hubId);
+            await _authorizationService.CheckAuthorizationRequirement(User,
+                new[]
+                {
+                    new AuthorizationRequirement(AuthorizationRequirementType.IsGermanLead),
+                    new AuthorizationRequirement(AuthorizationRequirementType.IsGeneralHubLead),
+                    new AuthorizationRequirement(AuthorizationRequirementType.IsCampusLeadForHub, hubId),
+                });
+            return await _service.GetHubById(hubId);
         }
 
         /// <summary>
         ///     Create hub
-        ///     Requirement: GermanLeads
+        ///     Requirement: <see cref="PolicyNames.GermanLeads"/>
         /// </summary>
         /// <returns></returns>
         [HttpPost]
@@ -84,21 +95,27 @@ namespace Microsoft.CampusCommunity.Api.Controllers
 
         /// <summary>
         ///     Update hub
-        ///     Requirement: HubLeads
+        ///     Requirement: <see cref="PolicyNames.HubLeads"/>
         /// </summary>
         /// <returns></returns>
         [HttpPut]
         [Route("{id}")]
         [Authorize(Policy = PolicyNames.HubLeads)]
-        public Task<Hub> Update([FromRoute] Guid id, [FromBody] Hub entity)
+        public async Task<Hub> Update([FromRoute] Guid id, [FromBody] Hub entity)
         {
             var userId = AuthenticationHelper.GetUserIdFromToken(User);
-            return _service.Update(userId, entity, ModelState.IsValid);
+            await _authorizationService.CheckAuthorizationRequirement(User,
+                new[]
+                {
+                    new AuthorizationRequirement(AuthorizationRequirementType.IsGermanLead),
+                    new AuthorizationRequirement(AuthorizationRequirementType.IsHubLeadForHub, id),
+                });
+            return await _service.Update(userId, entity, ModelState.IsValid);
         }
 
         /// <summary>
         ///     Change Hub Lead
-        ///     Requirement: GermanLeads
+        ///     Requirement: <see cref="PolicyNames.GermanLeads"/>
         /// </summary>
         /// <returns></returns>
         [HttpPut]
@@ -112,7 +129,7 @@ namespace Microsoft.CampusCommunity.Api.Controllers
 
         /// <summary>
         ///     Delete hub
-        ///     Requirement: GermanLeads
+        ///     Requirement: <see cref="PolicyNames.GermanLeads"/>
         /// </summary>
         /// <returns></returns>
         [HttpDelete]

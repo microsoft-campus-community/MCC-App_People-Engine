@@ -12,6 +12,7 @@ using Microsoft.CampusCommunity.Infrastructure.Configuration;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Db;
 using Microsoft.CampusCommunity.Infrastructure.Exceptions;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
+using Microsoft.CampusCommunity.Infrastructure.Middleware;
 using Microsoft.CampusCommunity.Services;
 using Microsoft.CampusCommunity.Services.Controller;
 using Microsoft.CampusCommunity.Services.Db;
@@ -41,18 +42,20 @@ namespace Microsoft.CampusCommunity.Api.Extensions
         /// <returns></returns>
         public static IServiceCollection AddDependencies(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddSingleton<IConfiguration>(configuration);
+            services.AddSingleton(configuration);
 
             var authenticationOptions = configuration.GetSection(AuthenticationSettingsSectionName)
                 .Get<AadAuthenticationConfiguration>();
 
             if (!authenticationOptions.IsValid())
                 throw new MccBadConfigurationException(
-                    $"Could not start application because configuration for section {AuthenticationSettingsSectionName} is not valid and misses values. Configuration: {authenticationOptions.ToString()}");
+                    $"Could not start application because configuration for section {AuthenticationSettingsSectionName} is not valid and misses values. Configuration: {authenticationOptions}");
 
             services.Configure<AadAuthenticationConfiguration>(
                 configuration.GetSection(AuthenticationSettingsSectionName));
             services.AddApplicationInsightsTelemetry();
+            services.AddScoped<ExceptionHandlingMiddleware>();
+
 
             services.AddAuthentication(authenticationOptions);
             services.AddAuthorization(configuration);
@@ -139,7 +142,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             });
 
             services.AddScoped<IAuthorizationHandler, GroupMembershipPolicyHandler>();
-            services.AddSingleton<AuthorizationConfiguration>(authConfig);
+            services.AddSingleton(authConfig);
 
             return services;
         }
@@ -222,7 +225,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
         {
             var graphConfigSection = configuration.GetSection(GraphAuthenticationSettingsSectionName);
             var graphConfig = graphConfigSection.Get<GraphClientConfiguration>();
-            services.AddSingleton<GraphClientConfiguration>(graphConfig);
+            services.AddSingleton(graphConfig);
 
             services.AddScoped<IBaseGenericRepository<Campus>, CampusRepository>();
             services.AddScoped<IBaseGenericRepository<Hub>, HubRepository>();
@@ -230,6 +233,9 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             services.AddScoped<IDbService<Campus>, DbCampusService>();
             services.AddScoped<IDbService<Hub>, DbHubService>();
 
+            services.AddScoped<IMccAuthorizationService, MccAuthorizationService>();
+
+            services.AddScoped<IUserControllerService, UserControllerService>();
             services.AddScoped<ICampusControllerService, CampusControllerService>();
             services.AddScoped<IHubControllerService, HubControllerService>();
 

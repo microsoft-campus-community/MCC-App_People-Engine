@@ -24,9 +24,14 @@ namespace Microsoft.CampusCommunity.DataAccess.Repositories
             return GetQueryable().ToListAsync();
         }
 
+        /// <summary>
+        /// Searches either by db id or by Aad Group Id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<TEntity> GetById(Guid id)
         {
-            return await GetIncludes().FirstOrDefaultAsync(e => e.Id == id);
+            return await GetIncludes().FirstOrDefaultAsync(e => e.Id == id || e.AadGroupId == id);
         }
 
         public async Task Delete(TEntity entity)
