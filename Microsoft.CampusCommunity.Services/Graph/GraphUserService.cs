@@ -372,7 +372,7 @@ namespace Microsoft.CampusCommunity.Services.Graph
         private async Task SendNewUserWelcomeMail(User user, NewUser newUser, User campusLead, SecureString userPassword)
         {
             var body =
-                $"Hello {user.DisplayName},\nWelcome to the Microsoft Campus Community! We are very happy to have you as your newest member. Your new user with the address {newUser.Email} is almost ready. We are just finishing a few things here and there. You can already try and login with the following credentials:\n\nUsername: {newUser.Email}\nPassword: {userPassword.ToUnsecureString()}\n\nPlease change the password after you login for the first time. If there are any problems don't hesitate to contact us.\nLet's all have a great time working together.\n\nBest regards\n{campusLead.DisplayName}\n\nPlease not that this mail was generated automatically.";
+                $"Hello {user.DisplayName},\nWelcome to the Microsoft Campus Community! We are very happy to have you as your newest member. Your new user with the address {newUser.Email} is almost ready. We are just finishing a few things here and there. You can already try and login with the following credentials:\n\nUsername: {newUser.Email}\nPassword: {userPassword.ToUnsecureString()}\n\nPlease change the password after you login for the first time. If there are any problems don't hesitate to contact us.\nLet's all have a great time working together.\n\nBest regards\n{campusLead.DisplayName}\n\nPlease note that this mail was generated automatically.";
             await SendMail($"Welcome to the Microsoft Campus Community", body, campusLead, newUser.SecondaryMail);
         }
     }

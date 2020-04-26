@@ -11,6 +11,9 @@
         IsGeneralCampusLead,
         IsCampusLeadForCampus,
         IsCampusLeadForHub,
+        IsCampusLeadForUser,
+        IsHubLeadForUser,
+        OwnUser,
         None
     }
 }

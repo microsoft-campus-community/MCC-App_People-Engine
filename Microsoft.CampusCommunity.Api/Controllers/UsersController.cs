@@ -74,20 +74,28 @@ namespace Microsoft.CampusCommunity.Api.Controllers
 
         /// <summary>
         /// Gets a user by id
-        /// Requirement: <see cref="PolicyNames.CampusLeads"/>
+        /// Requirement: <see cref="PolicyNames.Community"/>
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="scope"></param>
         /// <returns></returns>
         [HttpGet]
-        [Authorize(Policy = PolicyNames.CampusLeads)]
+        [Authorize(Policy = PolicyNames.Community)]
         [Route("{userId}")]
-        public Task<BasicUser> GetById(
+        public async Task<BasicUser> GetById(
             [FromRoute] Guid userId,
             [FromQuery(Name = "scope")] UserScope scope = UserScope.Basic
         )
         {
-            return _service.GetUserById(userId, scope);
+            await _authorizationService.CheckAuthorizationRequirement(User,
+                new[]
+                {
+                    new AuthorizationRequirement(AuthorizationRequirementType.IsGermanLead, Guid.Empty),
+                    new AuthorizationRequirement(AuthorizationRequirementType.IsHubLeadForUser, userId),
+                    new AuthorizationRequirement(AuthorizationRequirementType.IsCampusLeadForUser, userId),
+                    new AuthorizationRequirement(AuthorizationRequirementType.OwnUser, userId)
+                });
+            return await _service.GetUserById(userId, scope);
         }
 
         /// <summary>
