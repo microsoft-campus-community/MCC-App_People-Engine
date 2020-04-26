@@ -71,6 +71,25 @@ namespace Microsoft.CampusCommunity.Api.Controllers
             return _service.GetUserById(AuthenticationHelper.GetUserIdFromToken(User), scope);
         }
 
+
+        /// <summary>
+        /// Gets a user by id
+        /// Requirement: <see cref="PolicyNames.CampusLeads"/>
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="scope"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Authorize(Policy = PolicyNames.CampusLeads)]
+        [Route("{userId}")]
+        public Task<BasicUser> GetById(
+            [FromRoute] Guid userId,
+            [FromQuery(Name = "scope")] UserScope scope = UserScope.Basic
+        )
+        {
+            return _service.GetUserById(userId, scope);
+        }
+
         /// <summary>
         /// Create a new new User
         /// Requirement: <see cref="PolicyNames.CampusLeads"/>
