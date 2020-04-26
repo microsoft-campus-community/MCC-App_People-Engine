@@ -12,6 +12,7 @@ using Microsoft.CampusCommunity.Infrastructure.Configuration;
 using Microsoft.CampusCommunity.Infrastructure.Entities.Db;
 using Microsoft.CampusCommunity.Infrastructure.Exceptions;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
+using Microsoft.CampusCommunity.Infrastructure.Middleware;
 using Microsoft.CampusCommunity.Services;
 using Microsoft.CampusCommunity.Services.Controller;
 using Microsoft.CampusCommunity.Services.Db;
@@ -53,6 +54,8 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             services.Configure<AadAuthenticationConfiguration>(
                 configuration.GetSection(AuthenticationSettingsSectionName));
             services.AddApplicationInsightsTelemetry();
+            services.AddScoped<ExceptionHandlingMiddleware>();
+
 
             services.AddAuthentication(authenticationOptions);
             services.AddAuthorization(configuration);
