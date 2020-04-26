@@ -28,6 +28,9 @@ namespace Microsoft.CampusCommunity.Services
 
         public async Task CheckAuthorizationRequirement(ClaimsPrincipal user, AuthorizationRequirement requirement)
         {
+            // Whitelist daemon app role
+            if(user.HasDaemonAppRole()) return;
+
             var requirementMet = await IsAuthorizedForRequirement(requirement, user);
             if (!requirementMet)
             {
@@ -39,6 +42,9 @@ namespace Microsoft.CampusCommunity.Services
 
         public async Task CheckAuthorizationRequirement(ClaimsPrincipal user, IEnumerable<AuthorizationRequirement> requirements)
         {
+            // Whitelist daemon app role
+            if (user.HasDaemonAppRole()) return;
+
             var requirementsArray = requirements.ToArray();
             foreach (var requirement in requirementsArray)
             {
