@@ -8,13 +8,10 @@ namespace Microsoft.CampusCommunity.Api.Extensions
     {
         public static IApplicationBuilder UseExceptionMiddleware(this IApplicationBuilder builder, IAppInsightsService appInsightsService)
         {
+            var middleware = new ExceptionHandlingMiddleware(appInsightsService);
             return builder.UseExceptionHandler(appError =>
             {
-                appError.Use(async (context, next) =>
-                {
-                    var middleware = new ExceptionHandlingMiddleware(appInsightsService);
-                    await middleware.InvokeAsync(context, next);
-                });
+                appError.Run(async context => { await middleware.InvokeAsync(context); });
             });
         }
     }

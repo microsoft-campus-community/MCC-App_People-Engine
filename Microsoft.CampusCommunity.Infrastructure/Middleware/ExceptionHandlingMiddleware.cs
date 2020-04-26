@@ -6,6 +6,7 @@ using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
 using Microsoft.CampusCommunity.Infrastructure.Exceptions;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace Microsoft.CampusCommunity.Infrastructure.Middleware
 {
@@ -18,20 +19,11 @@ namespace Microsoft.CampusCommunity.Infrastructure.Middleware
             _appInsightsService = service;
         }
 
-        public async Task InvokeAsync(HttpContext context, Func<Task> next)
+        public async Task InvokeAsync(HttpContext context)
         {
-            // global try catch to catch all exceptions
-            try
-            {
-                await next.Invoke();
-            }
-            catch (Exception exception)
-            {
-                // create guid that will be used as a reference Id for app insights tracking
-                var appInsightsTrackingId = Guid.NewGuid();
-                await HandleExceptions(context, exception, appInsightsTrackingId);
-                LogExceptions(context, appInsightsTrackingId, exception);
-            }
+            var exceptionFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+            if (exceptionFeature.Error != null)
+                await HandleExceptions(context, exceptionFeature.Error);
         }
 
         private void LogExceptions(HttpContext context, Guid appInsightsTrackingId, Exception e)
@@ -39,8 +31,12 @@ namespace Microsoft.CampusCommunity.Infrastructure.Middleware
             _appInsightsService.TrackException(context, e, appInsightsTrackingId);
         }
 
-        private Task HandleExceptions(HttpContext context, Exception exception, Guid appInsightsTrackingId)
+        public Task HandleExceptions(HttpContext context, Exception exception)
         {
+            // create guid that will be used as a reference Id for app insights tracking
+            var appInsightsTrackingId = Guid.NewGuid();
+            LogExceptions(context, appInsightsTrackingId, exception);
+
             var message = exception.Message;
             var trace = exception.StackTrace;
 
