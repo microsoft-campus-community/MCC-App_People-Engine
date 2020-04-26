@@ -55,8 +55,7 @@ namespace Microsoft.CampusCommunity.Api
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
             IOptions<AadAuthenticationConfiguration> authenticationOptions, IConfiguration configuration, IAppInsightsService appInsightsService)
         {
-            //bool isDevEnv = env.IsDevelopment() || env.EnvironmentName.StartsWith("Development");
-            var isDevEnv = false;
+            bool isDevEnv = env.IsDevelopment() || env.EnvironmentName.StartsWith("Development");
             if (isDevEnv)
             {
                 app.UseDeveloperExceptionPage();
