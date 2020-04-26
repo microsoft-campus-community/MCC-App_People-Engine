@@ -56,7 +56,8 @@ namespace Microsoft.CampusCommunity.Api
             IOptions<AadAuthenticationConfiguration> authenticationOptions, IConfiguration configuration, IAppInsightsService appInsightsService)
         {
             bool isDevEnv = env.IsDevelopment() || env.EnvironmentName.StartsWith("Development");
-            if (isDevEnv)
+            bool useDevExceptionPage = configuration.GetValue<bool>("useDeveloperExceptionPage");
+            if (useDevExceptionPage)
             {
                 app.UseDeveloperExceptionPage();
             }
