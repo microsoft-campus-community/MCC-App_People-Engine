@@ -62,7 +62,6 @@ namespace Microsoft.CampusCommunity.Api.Helpers
             var dbHubs = hubs.Select(hub => new Hub()
                 {
                     AadGroupId = hub.Id,
-                    Id = hub.Id,
                     Campus = new List<Campus>(),
                     CreatedAt = DateTime.UtcNow,
                     Lead = Guid.Empty,
@@ -89,8 +88,7 @@ namespace Microsoft.CampusCommunity.Api.Helpers
                     Guid.Empty)
                 {
                     Hub = hub,
-                    AadGroupId = campus.Id,
-                    Id = campus.Id
+                    AadGroupId = campus.Id
                 };
                 // this will also add the campus to the corrsponding hub
                 context.Campus.Add(newCampus);

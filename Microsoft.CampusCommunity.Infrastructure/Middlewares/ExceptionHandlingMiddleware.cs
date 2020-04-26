@@ -6,24 +6,34 @@ using Microsoft.CampusCommunity.Infrastructure.Entities.Dto;
 using Microsoft.CampusCommunity.Infrastructure.Exceptions;
 using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Diagnostics;
 
-namespace Microsoft.CampusCommunity.Infrastructure.Middleware
+namespace Microsoft.CampusCommunity.Infrastructure.Middlewares
 {
-    public class ExceptionHandlingMiddleware
+    public class ExceptionHandlingMiddleware : IMiddleware
     {
+        private readonly RequestDelegate _next;
         private readonly IAppInsightsService _appInsightsService;
 
-        public ExceptionHandlingMiddleware(IAppInsightsService service)
+        public ExceptionHandlingMiddleware(RequestDelegate nextDelegate, IAppInsightsService service)
         {
+            _next = nextDelegate;
             _appInsightsService = service;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            var exceptionFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-            if (exceptionFeature.Error != null)
-                await HandleExceptions(context, exceptionFeature.Error);
+            // global try catch to catch all exceptions
+            try
+            {
+                await _next(context);
+            }
+            catch (Exception exception)
+            {
+                // create guid that will be used as a reference Id for app insights tracking
+                var appInsightsTrackingId = Guid.NewGuid();
+                await HandleExceptions(context, exception, appInsightsTrackingId);
+                LogExceptions(context, appInsightsTrackingId, exception);
+            }
         }
 
         private void LogExceptions(HttpContext context, Guid appInsightsTrackingId, Exception e)
@@ -31,20 +41,8 @@ namespace Microsoft.CampusCommunity.Infrastructure.Middleware
             _appInsightsService.TrackException(context, e, appInsightsTrackingId);
         }
 
-        public Task HandleExceptions(HttpContext context, Exception exception)
+        private Task HandleExceptions(HttpContext context, Exception exception, Guid appInsightsTrackingId)
         {
-            // create guid that will be used as a reference Id for app insights tracking
-            var appInsightsTrackingId = Guid.NewGuid();
-            try
-            {
-                LogExceptions(context, appInsightsTrackingId, exception);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-            
-
             var message = exception.Message;
             var trace = exception.StackTrace;
 

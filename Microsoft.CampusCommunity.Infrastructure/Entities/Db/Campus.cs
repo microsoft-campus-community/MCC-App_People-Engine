@@ -7,6 +7,7 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Db
         public string Name { get; set; }
         public Hub Hub { get; set; }
         public Guid Lead { get; set; }
+        public Guid AadGroupId { get; set; }
         public string UniversityName { get; set; }
 
         /// <inheritdoc />

@@ -68,14 +68,6 @@ namespace Microsoft.CampusCommunity.Infrastructure.Helpers
             return groupIds;
         }
 
-        public static bool HasDaemonAppRole(this ClaimsPrincipal user)
-        {
-            if (user == null || !user.HasClaim(c => c.Type == ClaimTypes.Role))
-                return false;
-
-            return user.FindAll(c => c.Type == ClaimTypes.Role).Any(c => c.Value == "DaemonAppRole");
-        }
-
 
         // FROM: https://www.ryadel.com/en/c-sharp-random-password-generator-asp-net-core-mvc/
         /// <summary>

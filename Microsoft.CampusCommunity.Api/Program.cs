@@ -28,14 +28,6 @@ namespace Microsoft.CampusCommunity.Api
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
             return Host.CreateDefaultBuilder(args)
-                .UseDefaultServiceProvider((context, options) =>
-                {
-                    // see https://stackoverflow.com/a/59605979
-                    //var isDevelopment = context.HostingEnvironment.IsDevelopment() || context.HostingEnvironment.EnvironmentName.StartsWith("Development");
-                    var isDevelopment = true;
-                    options.ValidateScopes = isDevelopment;
-                    options.ValidateOnBuild = isDevelopment;
-                })
                 .ConfigureAppConfiguration((hostingContext, builder) =>
                 {
                     var env = hostingContext.HostingEnvironment;

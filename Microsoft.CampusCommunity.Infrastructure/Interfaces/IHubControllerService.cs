@@ -18,9 +18,11 @@ namespace Microsoft.CampusCommunity.Infrastructure.Interfaces
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="userId">used to check if user is allowed to get hub</param>
+        /// <param name="isCampusLead">Campus leads needs to have additional checks performed -> campus lead can only get their hub</param>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task<Hub> GetHubById(Guid id);
+        Task<Hub> GetHubById(Guid userId, bool isCampusLead, Guid id);
 
         Task<Hub> Create(Guid userId, Hub entity, bool modelState);
 
