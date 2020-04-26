@@ -1,18 +1,13 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.CampusCommunity.Infrastructure.Interfaces;
-using Microsoft.CampusCommunity.Infrastructure.Middleware;
+using Microsoft.CampusCommunity.Infrastructure.Middlewares;
 
 namespace Microsoft.CampusCommunity.Api.Extensions
 {
     internal static class ErrorHandlingMiddlewareExtensions
     {
-        public static IApplicationBuilder UseExceptionMiddleware(this IApplicationBuilder builder, IAppInsightsService appInsightsService)
+        public static IApplicationBuilder UseExceptionMiddleware(this IApplicationBuilder builder)
         {
-            var middleware = new ExceptionHandlingMiddleware(appInsightsService);
-            return builder.UseExceptionHandler(appError =>
-            {
-                appError.Run(async context => { await middleware.InvokeAsync(context); });
-            });
+            return builder.UseMiddleware<ExceptionHandlingMiddleware>();
         }
     }
 }

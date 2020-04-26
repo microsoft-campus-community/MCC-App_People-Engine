@@ -8,6 +8,7 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Db
     {
         public string Name { get; set; }
         public Guid Lead { get; set; }
+        public Guid AadGroupId { get; set; }
         public List<Campus> Campus { get; set; }
 
         /// <inheritdoc />

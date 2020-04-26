@@ -8,7 +8,6 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Db
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Id { get; set; }
-        public Guid AadGroupId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime ModifiedAt { get; set; }
         public Guid? ModifiedBy { get; set; }

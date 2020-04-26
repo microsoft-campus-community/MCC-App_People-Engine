@@ -7,10 +7,6 @@ namespace Microsoft.CampusCommunity.Infrastructure.Entities.Dto
     {
         public bool? AccountEnabled { get; set; }
 
-        /// <summary>
-        /// City of user
-        /// </summary>
-        /// <example>Munich</example>
         public string City { get; set; }
 
         //public string University { get; set; } //Company
