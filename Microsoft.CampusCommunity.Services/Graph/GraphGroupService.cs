@@ -80,7 +80,7 @@ namespace Microsoft.CampusCommunity.Services.Graph
         }
 
         /// <inheritdoc />
-        public async Task<MccGraphGroup> CreateGroup(string name, Guid owner, string description)
+        public async Task<MccGraphGroup> CreateGroup(string name, Guid owner, string description, bool shouldCreateTeamsTeam)
         {
             // make sure there are no umlaute 
             var mailNickname = name.Replace(' ', '.').RemoveDiacritics();
@@ -109,6 +109,21 @@ namespace Microsoft.CampusCommunity.Services.Graph
                 _appInsightsService.TrackException(null, exWrapper, Guid.NewGuid());
                 Console.WriteLine("Could not add owner to group.");
             }
+
+            if (shouldCreateTeamsTeam)
+            {
+                try
+                {
+                    await CreateTeamsTeam(newGroup.Id);
+                }
+                catch
+                {
+                    // Rollback creation
+                    await _graphService.Client.Groups[newGroup.Id].Request().DeleteAsync();
+                    throw;
+                }
+            }
+                
 
             return MccGraphGroup.FromGraph(newGroup);
         }
@@ -163,6 +178,68 @@ namespace Microsoft.CampusCommunity.Services.Graph
                 }
 
             return result;
+        }
+
+        /// <summary>
+        /// Create a new teams. This operation is potentially long running because we might need to wait until the group is synced.
+        /// See comment before Task.Delay
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <returns></returns>
+        private async Task CreateTeamsTeam(string groupId)
+        {
+            var team = new Team()
+            {
+                GuestSettings = new TeamGuestSettings
+                {
+                    AllowCreateUpdateChannels = true,
+                    AllowDeleteChannels = true,
+                    ODataType = null
+                },
+                MemberSettings = new TeamMemberSettings
+                {
+                    AllowCreateUpdateChannels = true,
+                    ODataType = null
+                },
+                MessagingSettings = new TeamMessagingSettings
+                {
+                    AllowUserEditMessages = true,
+                    AllowUserDeleteMessages = true,
+                    ODataType = null
+                },
+                FunSettings = new TeamFunSettings
+                {
+                    AllowGiphy = true,
+                    GiphyContentRating = GiphyRatingType.Moderate,
+                    ODataType = null
+                },
+                ODataType = null
+            };
+            // we have to potentially try this 3 times
+            Team newTeam = null;
+            for (var i = 0; i < 3; i++)
+            {
+                try
+                { 
+                    newTeam = await _graphService.Client.Groups[groupId].Team.Request().PutAsync(team);
+                }
+                catch (Exception e)
+                {
+                    _appInsightsService.TrackException(null, e, Guid.NewGuid());
+                }
+
+                if (newTeam != null) break;
+
+                // add delay 
+                // https://docs.microsoft.com/en-us/graph/api/team-put-teams?view=graph-rest-1.0&tabs=csharp
+                // If the group was created less than 15 minutes ago, it's possible for the Create team call to fail with a 404 error code due to replication delays.
+                // The recommended pattern is to retry the Create team call three times, with a 10 second delay between calls.
+                await Task.Delay(3000);
+            }
+
+            if (newTeam == null)
+                throw new MccGraphException(
+                    $"Even after three consecutive tries, a team could not be created for the group with Id {groupId}");
         }
 
 
