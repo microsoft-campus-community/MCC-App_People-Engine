@@ -30,6 +30,13 @@ namespace Microsoft.CampusCommunity.Api.Authorization
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context,
             GroupMembershipRequirement requirement)
         {
+            // give full permissions if daemon app role
+            if (context.User.HasDaemonAppRole())
+            {
+                context.Succeed(requirement);
+                return;
+            }
+
             IList<Guid> groups;
             try
             {
