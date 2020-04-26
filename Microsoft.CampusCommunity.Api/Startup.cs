@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.CampusCommunity.Api.Extensions;
 using Microsoft.CampusCommunity.Api.Helpers;
 using Microsoft.CampusCommunity.Infrastructure.Configuration;
+using Microsoft.CampusCommunity.Infrastructure.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -50,8 +51,9 @@ namespace Microsoft.CampusCommunity.Api
         /// <param name="env"></param>
         /// <param name="authenticationOptions"></param>
         /// <param name="configuration"></param>
+        /// <param name="appInsightsService"></param>
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env,
-            IOptions<AadAuthenticationConfiguration> authenticationOptions, IConfiguration configuration)
+            IOptions<AadAuthenticationConfiguration> authenticationOptions, IConfiguration configuration, IAppInsightsService appInsightsService)
         {
             //bool isDevEnv = env.IsDevelopment() || env.EnvironmentName.StartsWith("Development");
             var isDevEnv = false;
@@ -61,7 +63,7 @@ namespace Microsoft.CampusCommunity.Api
             }
             else
             {
-                app.UseExceptionMiddleware();
+                app.UseExceptionMiddleware(appInsightsService);
             }
 
             app.UseHttpsRedirection();

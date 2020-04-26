@@ -9,23 +9,21 @@ using Newtonsoft.Json;
 
 namespace Microsoft.CampusCommunity.Infrastructure.Middleware
 {
-    public class ExceptionHandlingMiddleware : IMiddleware
+    public class ExceptionHandlingMiddleware
     {
-        private readonly RequestDelegate _next;
         private readonly IAppInsightsService _appInsightsService;
 
-        public ExceptionHandlingMiddleware(RequestDelegate nextDelegate, IAppInsightsService service)
+        public ExceptionHandlingMiddleware(IAppInsightsService service)
         {
-            _next = nextDelegate;
             _appInsightsService = service;
         }
 
-        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+        public async Task InvokeAsync(HttpContext context, Func<Task> next)
         {
             // global try catch to catch all exceptions
             try
             {
-                await _next(context);
+                await next.Invoke();
             }
             catch (Exception exception)
             {

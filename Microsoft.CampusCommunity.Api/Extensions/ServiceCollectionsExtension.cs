@@ -54,7 +54,7 @@ namespace Microsoft.CampusCommunity.Api.Extensions
             services.Configure<AadAuthenticationConfiguration>(
                 configuration.GetSection(AuthenticationSettingsSectionName));
             services.AddApplicationInsightsTelemetry();
-            services.AddSingleton<ExceptionHandlingMiddleware>();
+            services.AddScoped<ExceptionHandlingMiddleware>();
 
 
             services.AddAuthentication(authenticationOptions);
