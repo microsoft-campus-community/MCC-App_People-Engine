@@ -94,9 +94,20 @@ namespace Microsoft.CampusCommunity.Services.Graph
             return await AddFullScope(user);
         }
 
-        public Task<User> GetGraphUserById(Guid userId)
+        public async Task<User> GetGraphUserById(Guid userId)
         {
-            return _graphService.Client.Users[userId.ToString()].Request().GetAsync();
+            User user;
+            try
+            {
+                user = await _graphService.Client.Users[userId.ToString()].Request().GetAsync();
+            }
+            catch (ServiceException e)
+            {
+                throw new MccNotFoundException(
+                    $"Could not find user with id {userId}. Please see inner exception for details", e);
+            }
+
+            return user;
         }
 
         public async Task<User> GetLeadForCampus(Guid campusId)
