@@ -132,21 +132,51 @@ namespace Microsoft.CampusCommunity.Services.Graph
 
             var graphUser = CreateGraphUser(user, Campus.FromMccGroup(campus));
             var userPassword = graphUser.PasswordProfile.Password.ToSecureString();
+            var userMail = graphUser.UserPrincipalName;
             graphUser = await _graphService.Client.Users.Request().AddAsync(graphUser);
 
             // add user to the corresponding groups
             await _graphGroupService.AddUserToGroup(graphUser, _authorizationConfiguration.CommunityGroupId);
             await _graphGroupService.AddUserToGroup(graphUser, campusId);
 
-            // add licence
-            await AssignLicense(graphUser);
+            // add license
+            try
+            {
+                await AssignLicense(graphUser);
+            }
+            catch
+            {
+                // roll back user creation
+                await _graphService.Client.Users[graphUser.Id].Request().DeleteAsync();
+                throw;
+            }
+            
 
             // add new user as additional direct to lead
             var lead = await GetLeadForCampus(campus.Id);
+
+            if (lead == null)
+            {
+                // roll back user creation
+                await _graphService.Client.Users[graphUser.Id].Request().DeleteAsync();
+
+                throw new MccNotFoundException($"Could not find lead of campus with id {campus.Id}.");
+            }
+
             await AssignManager(graphUser, lead.Id);
 
             // Send welcome mail
-            await SendNewUserWelcomeMail(graphUser, user, lead, userPassword);
+            try
+            {
+                await SendNewUserWelcomeMail(graphUser, user, userMail, lead, userPassword);
+            }
+            catch
+            {
+                // roll back user creation
+                await _graphService.Client.Users[graphUser.Id].Request().DeleteAsync();
+                throw;
+            }
+            
 
             return BasicUser.FromGraphUser(graphUser);
         }
@@ -263,6 +293,9 @@ namespace Microsoft.CampusCommunity.Services.Graph
 
         public Task AssignManager(User user, string managerId)
         {
+            // do not assign manager to himself
+            if (user.Id == managerId) return Task.CompletedTask;
+
             return _graphService
                 .Client
                 .Users[user.Id]
@@ -274,6 +307,9 @@ namespace Microsoft.CampusCommunity.Services.Graph
 
         public Task AssignManager(Guid userId, string managerId)
         {
+            // do not assign manager to himself
+            if (userId.ToString() == managerId) return Task.CompletedTask;
+
             return _graphService
                 .Client
                 .Users[userId.ToString()]
@@ -354,10 +390,11 @@ namespace Microsoft.CampusCommunity.Services.Graph
 
         private static User CreateGraphUser(NewUser newUser, Campus campus)
         {
+            var userMail = GraphHelper.CreateMailForUser(newUser);
             var user = new User()
             {
                 //HireDate = DateTime.UtcNow,
-                UserPrincipalName = newUser.Email,
+                UserPrincipalName = $"{userMail}@campus-community.org",
                 JobTitle = UserJobTitleMember,
                 GivenName = newUser.FirstName,
                 DisplayName = $"{newUser.FirstName} {newUser.LastName}",
@@ -365,7 +402,7 @@ namespace Microsoft.CampusCommunity.Services.Graph
                 CompanyName = campus.Name,
                 Surname = newUser.LastName,
                 AccountEnabled = true,
-                MailNickname = $"{newUser.FirstName}.{newUser.LastName}",
+                MailNickname = userMail,
                 OfficeLocation = campus.CampusLocation,
                 UsageLocation = "DE"
             };
@@ -380,10 +417,10 @@ namespace Microsoft.CampusCommunity.Services.Graph
         }
 
         // TODO: Refine: Use Flow or something where everyone can change this
-        private async Task SendNewUserWelcomeMail(User user, NewUser newUser, User campusLead, SecureString userPassword)
+        private async Task SendNewUserWelcomeMail(User user, NewUser newUser, string newUserMail, User campusLead, SecureString userPassword)
         {
             var body =
-                $"Hello {user.DisplayName},\nWelcome to the Microsoft Campus Community! We are very happy to have you as your newest member. Your new user with the address {newUser.Email} is almost ready. We are just finishing a few things here and there. You can already try and login with the following credentials:\n\nUsername: {newUser.Email}\nPassword: {userPassword.ToUnsecureString()}\n\nPlease change the password after you login for the first time. If there are any problems don't hesitate to contact us.\nLet's all have a great time working together.\n\nBest regards\n{campusLead.DisplayName}\n\nPlease note that this mail was generated automatically.";
+                $"Hello {user.DisplayName},\nWelcome to the Microsoft Campus Community! We are very happy to have you as your newest member. Your new user with the address {newUserMail} is almost ready. We are just finishing a few things here and there. You can already try and login with the following credentials:\n\nUsername: {newUserMail}\nPassword: {userPassword.ToUnsecureString()}\n\nPlease change the password after you login for the first time. If there are any problems don't hesitate to contact us.\nLet's all have a great time working together.\n\nBest regards\n{campusLead.DisplayName}\n\nPlease note that this mail was generated automatically.";
             await SendMail($"Welcome to the Microsoft Campus Community", body, campusLead, newUser.SecondaryMail);
         }
     }
