@@ -57,7 +57,7 @@ namespace Microsoft.CampusCommunity.Services.Controller
             var lead = await _graphUserService.GetGraphUserById(entity.Lead);
 
             // create aad group
-            var hubGroup = await _graphGroupService.CreateGroup(entity.Name, userId, "Hub Group");
+            var hubGroup = await _graphGroupService.CreateGroup(entity.Name, userId, "Hub Group", true);
             
             // add lead to group
             await _graphGroupService.AddUserToGroup(lead, hubGroup.Id);

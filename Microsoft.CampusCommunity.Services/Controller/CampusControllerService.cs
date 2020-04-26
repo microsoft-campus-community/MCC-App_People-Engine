@@ -91,7 +91,7 @@ namespace Microsoft.CampusCommunity.Services.Controller
             // find lead
             var lead = await _graphUserService.GetGraphUserById(campus.Lead);
 
-            var campusGroup = await _graphGroupService.CreateGroup(campus.Name, userId, hub.AadGroupId.ToString());
+            var campusGroup = await _graphGroupService.CreateGroup(campus.Name, userId, hub.AadGroupId.ToString(), true);
 
             // add lead to group
             await _graphGroupService.AddUserToGroup(lead, campusGroup.Id);
