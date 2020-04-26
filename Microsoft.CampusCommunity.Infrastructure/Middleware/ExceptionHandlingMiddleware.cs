@@ -35,7 +35,15 @@ namespace Microsoft.CampusCommunity.Infrastructure.Middleware
         {
             // create guid that will be used as a reference Id for app insights tracking
             var appInsightsTrackingId = Guid.NewGuid();
-            LogExceptions(context, appInsightsTrackingId, exception);
+            try
+            {
+                LogExceptions(context, appInsightsTrackingId, exception);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            
 
             var message = exception.Message;
             var trace = exception.StackTrace;
