@@ -39,5 +39,13 @@ namespace Microsoft.CampusCommunity.Infrastructure.Helpers
             fullUser.IsAdmin = groupMembers.Admins.Any(a => a == fullUser.Id);
             return fullUser;
         }
+
+        public static string CreateMailForUser(NewUser user)
+        {
+            // remove everything after space
+            var firstName = user.FirstName.Split(" ")[0];
+            var lastName = user.LastName.Split(" ")[0];
+            return $"{firstName}.{lastName}";
+        }
     }
 }
